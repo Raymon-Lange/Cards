@@ -2,7 +2,7 @@ import socket
 from _thread import *
 import sys
 
-server = "192.168.1.1"
+server = "localhost"
 port = 1369
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
