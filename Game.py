@@ -23,6 +23,8 @@ class Board:
 
         self.deck.shuffle()
 
+        print(len(self.deck.cards))
+
         for i in range(1,15):
             self.play("start::", 0)
             self.play("start::", 1)
@@ -48,7 +50,6 @@ class Board:
     def play(self,data, playerId):
 
         action, value, location = data.split(':')
-        print(data)
 
         if action == "deal":
             self.dealPlayer(playerId)
@@ -56,6 +57,8 @@ class Board:
             self.startGame(playerId)
         if action == "discard":
             self.discard(value, location, playerId)
+            self.currentTurn = (self.currentTurn + 1) % 2
+            self.dealPlayer(self.currentTurn)
         if action == "move":
             self.move(value, location, playerId)
 
@@ -70,25 +73,29 @@ class Board:
             self.playerTwo.goal.append(self.deck.deal())
             index = len(self.playerTwo.goal) - 1
             self.playerTwo.goal[index].rect.x = 25
-            self.playerTwo.goal[index].rect.y = 365
+            self.playerTwo.goal[index].rect.y = 470
 
     def dealPlayer(self, playerId):
         if playerId == 0:
             while len(self.playerOne.hand) != 5:
                 self.playerOne.hand.append(self.deck.deal())
-                index = len(self.playerOne.hand) - 1
+
+            for num, card in enumerate(self.playerOne.hand):
+                index = num
                 x = 140 + (81 * index)
                 y = 50
-                self.playerOne.hand[index].rect.x = x
-                self.playerOne.hand[index].rect.y = y
+                card.rect.x = x
+                card.rect.y = y
         if playerId == 1:
             while len(self.playerTwo.hand) != 5:
                 self.playerTwo.hand.append(self.deck.deal())
-                index = len(self.playerTwo.hand) - 1
-                x = 150 + (81 * index)
-                y = 365
-                self.playerTwo.hand[index].rect.x = x
-                self.playerTwo.hand[index].rect.y = y
+
+            for num, card in enumerate(self.playerTwo.hand):
+                index = num
+                x = 140 + (81 * index)
+                y = 470
+                card.rect.x = x
+                card.rect.y = y
 
     def discard(self, value, location , playerId):
         print(value)
@@ -101,6 +108,15 @@ class Board:
                     card.move(x,y)
                     self.playerOne.discard[int(location)].append(card)
                     self.playerOne.hand.remove(card)
+        if playerId == 1:
+            x = 80
+            y = 365
+            for card in self.playerTwo.hand:
+                if str(card) == value:
+                    x += 91 * (int(location)+1)
+                    card.move(x,y)
+                    self.playerTwo.discard[int(location)].append(card)
+                    self.playerTwo.hand.remove(card)
 
     def move(self, value, location, playerId):
         if playerId == 0:
@@ -120,20 +136,45 @@ class Board:
                 self.field[int(location)].append(card)
                 self.playerOne.goal.remove(card)
 
+            for discardPile in self.playerOne.discard:
+                if len(discardPile) > 0:
+                        card = discardPile[len(discardPile)-1]
+                        if str(card) == value:
+                            x += 91 * (int(location)+1)
+                            card.move(x,y)
+                            self.field[int(location)].append(card)
+                            discardPile.remove(card)
+                        
+
+        
+        if playerId == 1:
+            x = 50
+            y = 260
+            for card in self.playerTwo.hand:
+                if str(card) == value:
+                    x += 91 * (int(location)+1)
+                    card.move(x,y)
+                    self.field[int(location)].append(card)
+                    self.playerTwo.hand.remove(card)
+
+            if str(self.playerTwo.goal[0]) == value:
+                card = self.playerTwo.goal[0]
+                x += 91 * (int(location)+1)
+                card.move(x,y)
+                self.field[int(location)].append(card)
+                self.playerTwo.goal.remove(card)
+
+            for discardPile in self.playerTwo.discard:
+                if len(discardPile) > 0:
+                        card = discardPile[len(discardPile)-1]
+                        if str(card) == value:
+                            x += 91 * (int(location)+1)
+                            card.move(x,y)
+                            self.field[int(location)].append(card)
+                            discardPile.remove(card)
+
 
     def playCard(self, card):
-        #STEP: First check to see if we discarded a card
-        discardY = 155
-        x = 80
-        for num, discardPile in enumerate(self.playerOne.discard):
-            x += 20 + 71 
-            if len(discardPile) == 0:
-                if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
-                    return "discard:"+ str(card)+":"+str(num)
-            else:
-                if discardPile[0].rect.colliderect(card.rect):
-                    return "discard:"+ str(card)+":"+str(num)
-                
 
         #STEP: than check the field
         fieldY = 260
@@ -149,8 +190,36 @@ class Board:
                 if field[0].rect.colliderect(card.rect):
                     cardCount = len(field)-1
                     if self.deck.ranks.index(card.rank) - cardCount == 1:
-                        return "move:"+ str(card)+":"+str(num)
+                        return "move:"+ str(card)+":"+str(num)        
 
+        #STEP: Check for first player
+        if self.currentTurn == 0:
+            #STEP: First check to see if we discarded a card
+            discardY = 155
+            x = 80
+            for num, discardPile in enumerate(self.playerOne.discard):
+                x += 20 + 71 
+                if len(discardPile) == 0:
+                    if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
+                        return "discard:"+ str(card)+":"+str(num)
+                else:
+                    if discardPile[0].rect.colliderect(card.rect):
+                        return "discard:"+ str(card)+":"+str(num)
+                    
+                        
+        if self.currentTurn == 1:
+             #STEP: First check to see if we discarded a card
+            discardY = 365
+            x = 80
+            for num, discardPile in enumerate(self.playerTwo.discard):
+                x += 20 + 71 
+                if len(discardPile) == 0:
+                    if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
+                        return "discard:"+ str(card)+":"+str(num)
+                else:
+                    if discardPile[0].rect.colliderect(card.rect):
+                        return "discard:"+ str(card)+":"+str(num)
+                    
 
         return None
     
@@ -201,6 +270,31 @@ class Board:
             else:
                 card[len(card)-1].draw(screen)
 
+
+        #STEP: Draw Player Two
+        x = 80
+        y += ySpaceing
+
+        for card in self.playerTwo.discard:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
+            else:
+                card[len(card)-1].draw(screen)
+
+
+        x = 25
+        y += ySpaceing
+
+        self.playerTwo.goal[0].draw(screen,90)
+
+        x = 50
+
+        for card in range(0,5):
+            x += 20 + 71 
+            if len(self.playerTwo.hand) > card:
+                self.playerTwo.hand[card].draw(screen)
+
 class Player:
     def __init__(self, name):
         self.name = name
@@ -223,7 +317,7 @@ class Deck:
         self.suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
         self.ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
 
-        for deck in range(1,decks):
+        for deck in range(0,decks):
             for suit in self.suits:
                 for rank in self.ranks:
                     self.cards.append(Card(suit, rank))
