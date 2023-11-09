@@ -40,7 +40,18 @@ class Board:
         pass
     
     def play(self,data):
-        pass
+        self.field[0].append(self.deck.deal())
+
+    def endTurn(self):
+        if self.currentTurn == 0:
+            while len(self.playerOne.hand) != 4:
+                self.playerOne.hand.append(self.deck.deal())
+            self.currentTurn = 1
+        else:
+            while len(self.playerTwo.hand) != 4:
+                self.playerTwo.hand.append(self.deck.deal())
+            self.currentTurn = 0
+        
 
     def __str__(self):
         return str(self.playerOne)
@@ -48,20 +59,74 @@ class Board:
     def draw(self, screen):
         screen.fill((0,100,0))
 
-        # Set the border color
-        border_color = (0, 0, 0)
-        # Set the border width
-        border_width = 5
-        # Draw the rectangle
-        pygame.draw.rect(screen, border_color, (50, 50, 50, 100), border_width)
+        ySpaceing = 105
 
+        #STEP: Draw Player One
+        x = 25
+        y = 50
+
+        self.playerOne.goal[0].draw(screen, x,y,90)
+
+        x = 50
+
+        for card in range(0,4):
+            x += 20 + 71 
+            if len(self.playerOne.hand) > card:
+                self.playerOne.hand[card].draw(screen, x,y)
+            else:
+                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
+
+        x = 50
+        y += ySpaceing
+
+        for card in self.playerOne.discard:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
+
+
+        # Draw the field
+        x = 50
+        y += ySpaceing
         
+        for card in self.field:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
+            else:
+                card[len(card)-1].draw(screen,x,y)
+
+        #STEP: Draw Player 2 
+        x = 50
+        y += ySpaceing
+
+        for card in self.playerTwo.discard:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
+
+
+        x = 25
+        y += ySpaceing
+        
+        self.playerTwo.goal[0].draw(screen, x,y,90)
+
+        x = 50
+
+        for card in range(0,4):
+            x += 20 + 71 
+            if len(self.playerTwo.hand) > card:
+                self.playerTwo.hand[card].draw(screen, x,y)
+            else:
+                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
+        
+
 
 class Player:
     def __init__(self, name):
         self.name = name
         self.hand = []
-        self.discard = [[],[],[],[]]
+        self.discard = [[],[],[],[],]
         self.goal = []
     
     def __str__(self):
@@ -76,7 +141,7 @@ class Player:
 class Deck:
     def __init__(self, decks =1):
         self.cards = []
-        self.suits = ["hearts", "diamonds", "clubs", "spades"]
+        self.suits = ["Hearts", "Diamonds", "Clubs", "Spades"]
         self.ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"]
 
         for deck in range(1,decks):
@@ -95,12 +160,20 @@ class Deck:
             return True
         return False
 
-class Card:
-  def __init__(self, suit, rank):
-    self.suit = suit
-    self.rank = rank
+class Card(pygame.sprite.Sprite):
+    '''
+    A card size is 71 X 94
+    '''
+    def __init__(self, suit, rank):
+        super().__init__()
+        self.suit = suit
+        self.rank = rank
 
-    self.image = pygame.image.load(join("assets", suit, suit+rank+"png"))
-
-  def __str__(self):
-    return f"{self.rank} of {self.suit}"
+        self.image = pygame.image.load(join("assets", suit, suit+rank+".png"))
+  
+    def __str__(self):
+        return f"{self.rank} of {self.suit}"
+    
+    def draw(self,screen, x, y, rotate =0):
+        rotated_image = pygame.transform.rotate(self.image, rotate)
+        screen.blit(rotated_image, (x,y))
