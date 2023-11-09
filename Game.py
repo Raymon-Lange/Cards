@@ -1,11 +1,20 @@
 import random
+import pygame
+from os.path import isfile, join
 
-class Game:
-    def __init__(self):
+class Board:
+    def __init__(self, id):
+        #Game State
+        self.id = id
+        self.ready = False
+        self.currentTurn = 0 # either zero or one 
+
+
+        #Game Objects
         self.playerOne = Player("One")
         self.playerTwo = Player("Two")
         self.deck = Deck(2)
-        self.field = [[]]
+        self.field = [[],[],[],[]]
         self.discardPile = []
 
         self.deck.shuffle()
@@ -14,18 +23,45 @@ class Game:
             self.playerOne.goal.append(self.deck.deal())
             self.playerTwo.goal.append(self.deck.deal())
 
-            while len(self.playerOne.hand) <= 5:
-                self.playerOne.hand.append(self.deck.deal())
 
+        if self.deck.compare(self.playerOne.goal[0], self.playerTwo.goal[0]):
+            self.currentTurn = 0
+        else:
+            self.currentTurn = 1
+
+
+    def connected(self):
+        return self.ready
+    
+    def whoTurn(self):
+        return self.currentTurn
+    
+    def reset(self):
+        pass
+    
+    def play(self,data):
+        pass
 
     def __str__(self):
         return str(self.playerOne)
+    
+    def draw(self, screen):
+        screen.fill((0,100,0))
+
+        # Set the border color
+        border_color = (0, 0, 0)
+        # Set the border width
+        border_width = 5
+        # Draw the rectangle
+        pygame.draw.rect(screen, border_color, (50, 50, 50, 100), border_width)
+
+        
 
 class Player:
     def __init__(self, name):
         self.name = name
         self.hand = []
-        self.discard = [[]]
+        self.discard = [[],[],[],[]]
         self.goal = []
     
     def __str__(self):
@@ -38,11 +74,10 @@ class Player:
         return playerInfo + handInfo
 
 class Deck:
-    suits = ["hearts", "diamonds", "clubs", "spades"]
-    ranks = ["ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"]
-
     def __init__(self, decks =1):
         self.cards = []
+        self.suits = ["hearts", "diamonds", "clubs", "spades"]
+        self.ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"]
 
         for deck in range(1,decks):
             for suit in self.suits:
@@ -54,15 +89,18 @@ class Deck:
 
     def deal(self):
         return self.cards.pop()
+    
+    def compare(self, cardOne, cardTwo):
+        if self.ranks.index(cardOne.rank) < self.ranks.index(cardTwo.rank):
+            return True
+        return False
 
 class Card:
   def __init__(self, suit, rank):
     self.suit = suit
     self.rank = rank
 
+    self.image = pygame.image.load(join("assets", suit, suit+rank+"png"))
+
   def __str__(self):
     return f"{self.rank} of {self.suit}"
-
-
-g = Game()
-print(g)
