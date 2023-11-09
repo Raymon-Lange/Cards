@@ -189,7 +189,7 @@ class Board:
             else:
                 if field[0].rect.colliderect(card.rect):
                     cardCount = len(field)-1
-                    if self.deck.ranks.index(card.rank) - cardCount == 1:
+                    if self.deck.ranks.index(card.rank) - cardCount == 1 or card.rank == "King":
                         return "move:"+ str(card)+":"+str(num)        
 
         #STEP: Check for first player
