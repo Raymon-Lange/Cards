@@ -78,6 +78,13 @@ class Board:
 
             if self.currentTurn == 1 and len(self.playerTwo.hand) == 0:
                     self.dealPlayer(1)
+
+        if len(self.deck.cards) < 10:
+            random.shuffle(self.dump)
+            self.deck.cards = self.deck.cards + self.dump
+            self.dump.clear()
+            print("We have reshuffled")
+
                 
     def startGame(self, playerId):
         if playerId == 0:
@@ -247,7 +254,7 @@ class Player:
     def __init__(self, name):
         self.name = name
         self.hand = []
-        self.discard = [[],[],[],[],]
+        self.discard = [[],[],[],[]]
         self.goal = []
     
     def __str__(self):
