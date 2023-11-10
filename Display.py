@@ -110,7 +110,7 @@ class Display:
 
             if event.type == pygame.MOUSEMOTION:
                 if self.activeCard != None:
-                    if event.rel[0] > 1 or event.rel[0] < -1 and event.rel[1] > 1 or event.rel[1] < -1:
+                    #if event.rel[0] > 1 or event.rel[0] < -1 and event.rel[1] > 1 or event.rel[1] < -1:
                         self.activeCard.rect.move_ip(event.rel)
 
             self.drawBoard()

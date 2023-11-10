@@ -19,7 +19,7 @@ class Board:
         self.playerTwo = Player("Two")
         self.deck = Deck(2)
         self.field = [[],[],[],[]]
-        self.discardPile = []
+        self.dump = []
 
         self.deck.shuffle()
 
@@ -61,7 +61,21 @@ class Board:
             self.dealPlayer(self.currentTurn)
         if action == "move":
             self.move(value, location, playerId)
+            
+            if self.currentTurn == 0 and len(self.playerOne.hand) == 0:
+                    self.dealPlayer(0)
 
+            if self.currentTurn == 1 and len(self.playerOne.hand) == 0:
+                    self.dealPlayer(1)
+
+            self.checkField()
+
+    def checkField(self):
+        for pile in self.field:
+            if len(pile) == 12:
+                while len(pile) != 0:
+                    self.dump.append(pile.pop())
+                
 
     def startGame(self, playerId):
         if playerId == 0:
