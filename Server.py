@@ -4,7 +4,7 @@ import pickle
 from Game import *
 import sys
 
-server = "localhost"
+server = "192.168.86.42"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

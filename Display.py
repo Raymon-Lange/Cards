@@ -59,9 +59,11 @@ class Display:
         for card in range(0,5):
             x += 12 + 71 
             if len(self.game.playerOne.hand) > card:
-                self.drawCard(self.game.playerOne.hand[card])
-            #else:
-            #    pygame.draw.rect(self.window, (0, 255, 0), (x,y,71,94), 2)
+                if self.playerId == 0:
+                    self.drawCard(self.game.playerOne.hand[card])
+                else:
+                    self.window.blit(self.otherPlayerCard, self.game.playerOne.hand[card])
+
 
         x = 80
         y += ySpaceing
@@ -107,7 +109,10 @@ class Display:
         for card in range(0,5):
             x += 20 + 71 
             if len(self.game.playerTwo.hand) > card:
+                if self.playerId == 1:
                     self.drawCard(self.game.playerTwo.hand[card])
+                else: 
+                    self.window.blit(self.otherPlayerCard, self.game.playerTwo.hand[card])
 
 
 
