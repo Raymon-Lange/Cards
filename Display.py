@@ -1,6 +1,7 @@
 import pygame
 from Network import Network
 from Game import *
+import sys
 
 # Create the window
 window = pygame.display.set_mode((800, 600))
@@ -13,10 +14,17 @@ class Display:
 
     def __init__(self):
         self.window = window
-        self.game = Board(0)
+        #self.game = Board(0)
+        
+        deck = Deck()
 
-    def drawBoard(self):
-        self.game.draw(window)
+        self.cardImages = {}
+
+        for suit in deck.suits:
+            for rank in deck.ranks:
+                key = f"{rank} of {suit}"
+                image = pygame.image.load(join("assets", suit, suit+rank+".png"))
+                self.cardImages.update({key : image})
 
 
     def deal(self):
@@ -25,12 +33,102 @@ class Display:
     def play(self):
         self.game.play("deal::", 1)
 
+    def drawCard(self, card , rotate=0):
+        image = self.cardImages[str(card)]
+        rotateImage = pygame.transform.rotate(image, rotate)
+        self.window.blit(rotateImage, card.rect)
+
+    def drawBoard(self):
+
+        #STEP: Repaint the background
+        self.window.fill((0,100,0))
+
+        ySpaceing = 105
+
+        #STEP: Draw Player One
+        x = 25
+        y = 50
+
+        self.drawCard(self.game.playerOne.goal[0], 90)
+
+        
+        x = 50
+
+        for card in range(0,5):
+            x += 12 + 71 
+            if len(self.game.playerOne.hand) > card:
+                self.drawCard(self.game.playerOne.hand[card])
+            #else:
+            #    pygame.draw.rect(self.window, (0, 255, 0), (x,y,71,94), 2)
+
+        x = 80
+        y += ySpaceing
+
+        for card in self.game.playerOne.discard:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(self.window, (0, 255, 0), (x,y,71,94), 2)
+            else:
+                self.drawCard(card[len(card)-1])
+
+        # Draw the field
+        x = 50
+        y += ySpaceing
+        
+        for card in self.game.field:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(self.window, (0, 255, 0), (x,y,71,94), 2)
+            else:
+                self.drawCard(card[len(card)-1])
+
+
+        #STEP: Draw Player Two
+        x = 80
+        y += ySpaceing
+
+        for card in self.game.playerTwo.discard:
+            x += 20 + 71 
+            if len(card) == 0:
+                pygame.draw.rect(self.window, (0, 255, 0), (x,y,71,94), 2)
+            else:
+                self.drawCard(card[len(card)-1])
+
+
+        x = 25
+        y += ySpaceing
+
+        self.drawCard(self.game.playerTwo.goal[0],90)
+
+        x = 50
+
+        for card in range(0,5):
+            x += 20 + 71 
+            if len(self.game.playerTwo.hand) > card:
+                self.drawCard(self.game.playerTwo.hand[card])
+
+
+
     def run(self):
         clock = pygame.time.Clock()
+
+        network = Network()
+        playerId = network.getId()
+
+        print("You are player", playerId)
         
         self.activeCard = None
         self.orgX = 0
         self.orgY = 0
+
+        try:
+            self.game = network.send("get")
+            print(sys.getsizeof(self.game))
+        except:
+            run = False
+            print("Couldn't get game")
+            exit()
+
 
         while True:
 
@@ -101,7 +199,8 @@ class Display:
                             data = self.game.playCard(self.activeCard)
 
                             if data:
-                                self.game.play(data, self.game.currentTurn)
+                                #self.game.play(data, self.game.currentTurn) saved for local mode
+                                network.send(data)
                             else:
                                 self.activeCard.move(self.orgX, self.orgY)
                             
@@ -122,9 +221,9 @@ class Display:
 main_class = Display()
 
 
-main_class.deal()
-main_class.deal()
-main_class.play()
+#main_class.deal()
+#main_class.deal()
+#main_class.play()
 
 # Run the main loop
 main_class.run()

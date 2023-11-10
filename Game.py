@@ -23,8 +23,6 @@ class Board:
 
         self.deck.shuffle()
 
-        print(len(self.deck.cards))
-
         for i in range(1,15):
             self.play("start::", 0)
             self.play("start::", 1)
@@ -33,6 +31,8 @@ class Board:
             self.currentTurn = 0
         else:
             self.currentTurn = 1
+
+        self.dealPlayer(self.currentTurn)
 
 
     def connected(self):
@@ -49,6 +49,8 @@ class Board:
 
     def play(self,data, playerId):
 
+        print("from player",playerId," move", data)
+
         action, value, location = data.split(':')
 
         if action == "deal":
@@ -61,22 +63,20 @@ class Board:
             self.dealPlayer(self.currentTurn)
         if action == "move":
             self.move(value, location, playerId)
-            
-            if self.currentTurn == 0 and len(self.playerOne.hand) == 0:
-                    self.dealPlayer(0)
-
-            if self.currentTurn == 1 and len(self.playerOne.hand) == 0:
-                    self.dealPlayer(1)
-
             self.checkField()
 
     def checkField(self):
         for pile in self.field:
-            if len(pile) == 13:
+            if len(pile) == 12:
                 while len(pile) != 0:
                     self.dump.append(pile.pop())
-                
 
+            if self.currentTurn == 0 and len(self.playerOne.hand) == 0:
+                    self.dealPlayer(0)
+
+            if self.currentTurn == 1 and len(self.playerTwo.hand) == 0:
+                    self.dealPlayer(1)
+                
     def startGame(self, playerId):
         if playerId == 0:
             self.playerOne.goal.append(self.deck.deal())
@@ -112,11 +112,10 @@ class Board:
                 card.rect.y = y
 
     def discard(self, value, location , playerId):
-        print(value)
         if playerId == 0:
             x = 80
             y = 155
-            for card in self.playerOne.hand:
+        for card in self.playerOne.hand:
                 if str(card) == value:
                     x += 91 * (int(location)+1)
                     card.move(x,y)
@@ -161,8 +160,6 @@ class Board:
                             self.field[int(location)].append(card)
                             discardPile.remove(card)
                         
-
-        
         if playerId == 1:
             x = 50
             y = 260
@@ -190,7 +187,6 @@ class Board:
                             card.move(x,y)
                             self.field[int(location)].append(card)
                             discardPile.remove(card)
-
 
     def playCard(self, card):
 
@@ -245,74 +241,6 @@ class Board:
     def __str__(self):
         return str(self.playerOne) + "\n " + str(self.playerTwo)
     
-    def draw(self, screen):
-
-        #STEP: Repaint the background
-        screen.fill((0,100,0))
-
-        ySpaceing = 105
-
-        #STEP: Draw Player One
-        x = 25
-        y = 50
-
-        self.playerOne.goal[0].draw(screen,90)
-
-        x = 50
-
-        for card in range(0,5):
-            x += 12 + 71 
-            if len(self.playerOne.hand) > card:
-                self.playerOne.hand[card].draw(screen)
-            #else:
-            #    pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
-
-        x = 80
-        y += ySpaceing
-
-        for card in self.playerOne.discard:
-            x += 20 + 71 
-            if len(card) == 0:
-                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
-            else:
-                card[len(card)-1].draw(screen)
-
-        # Draw the field
-        x = 50
-        y += ySpaceing
-        
-        for card in self.field:
-            x += 20 + 71 
-            if len(card) == 0:
-                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
-            else:
-                card[len(card)-1].draw(screen)
-
-
-        #STEP: Draw Player Two
-        x = 80
-        y += ySpaceing
-
-        for card in self.playerTwo.discard:
-            x += 20 + 71 
-            if len(card) == 0:
-                pygame.draw.rect(screen, (0, 255, 0), (x,y,71,94), 2)
-            else:
-                card[len(card)-1].draw(screen)
-
-
-        x = 25
-        y += ySpaceing
-
-        self.playerTwo.goal[0].draw(screen,90)
-
-        x = 50
-
-        for card in range(0,5):
-            x += 20 + 71 
-            if len(self.playerTwo.hand) > card:
-                self.playerTwo.hand[card].draw(screen)
-
 class Player:
     def __init__(self, name):
         self.name = name
@@ -351,7 +279,7 @@ class Deck:
             return True
         return False
 
-class Card(pygame.sprite.Sprite):
+class Card():
     '''
     A card size is 71 X 94
     '''
@@ -360,8 +288,7 @@ class Card(pygame.sprite.Sprite):
         self.suit = suit
         self.rank = rank
 
-        self.image = pygame.image.load(join("assets", suit, suit+rank+".png"))
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect(0,0,71,94)
   
     def __str__(self):
         return f"{self.rank} of {self.suit}"
@@ -370,6 +297,3 @@ class Card(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
     
-    def draw(self,screen, rotate =0):
-        rotated_image = pygame.transform.rotate(self.image, rotate)
-        screen.blit(rotated_image, self.rect)
