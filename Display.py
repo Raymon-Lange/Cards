@@ -16,9 +16,11 @@ class Display:
         self.window = window
         #self.game = Board(0)
         
+        self.playerId = 1
         deck = Deck()
 
         self.cardImages = {}
+        self.otherPlayerCard = pygame.image.load(join("assets", "backs", "BackRed.png"))
 
         for suit in deck.suits:
             for rank in deck.ranks:
@@ -105,7 +107,7 @@ class Display:
         for card in range(0,5):
             x += 20 + 71 
             if len(self.game.playerTwo.hand) > card:
-                self.drawCard(self.game.playerTwo.hand[card])
+                    self.drawCard(self.game.playerTwo.hand[card])
 
 
 
@@ -113,9 +115,9 @@ class Display:
         clock = pygame.time.Clock()
 
         network = Network()
-        playerId = network.getId()
+        self.playerId = int(network.getId())
 
-        print("You are player", playerId)
+        print("You are player", self.playerId)
         
         self.activeCard = None
         self.orgX = 0
@@ -133,6 +135,9 @@ class Display:
         while True:
 
             clock.tick(60)
+
+            if self.game.currentTurn != self.playerId:
+                self.game = network.send("get")
             # Check for events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -141,7 +146,7 @@ class Display:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
 
-                    if self.game.currentTurn == 0:
+                    if self.playerId == 0:
                         if self.activeCard == None:
                             for num, card in enumerate(self.game.playerOne.hand):
                                 if card.rect.collidepoint(event.pos):
@@ -166,7 +171,7 @@ class Display:
                                     self.orgX = card.rect.x
                                     self.orgY = card.rect.y
 
-                    if self.game.currentTurn == 1:
+                    if self.playerId == 1:
                         if self.activeCard == None:
                             for num, card in enumerate(self.game.playerTwo.hand):
                                 if card.rect.collidepoint(event.pos):
@@ -200,7 +205,7 @@ class Display:
 
                             if data:
                                 #self.game.play(data, self.game.currentTurn) saved for local mode
-                                network.send(data)
+                                self.game = network.send(data)
                             else:
                                 self.activeCard.move(self.orgX, self.orgY)
                             

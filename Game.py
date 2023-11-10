@@ -48,6 +48,8 @@ class Board:
         pass
 
     def play(self,data, playerId):
+        
+        playerId = int(playerId)
 
         print("from player",playerId," move", data)
 
