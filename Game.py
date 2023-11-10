@@ -72,7 +72,7 @@ class Board:
 
     def checkField(self):
         for pile in self.field:
-            if len(pile) == 12:
+            if len(pile) == 13:
                 while len(pile) != 0:
                     self.dump.append(pile.pop())
                 
