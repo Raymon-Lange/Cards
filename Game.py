@@ -128,7 +128,8 @@ class Board:
                     card.move(x,y)
                     self.field[int(location)].append(card)
                     self.playerOne.hand.remove(card)
-
+                    
+            x = 50        
             if str(self.playerOne.goal[0]) == value:
                 card = self.playerOne.goal[0]
                 x += 91 * (int(location)+1)
@@ -136,6 +137,7 @@ class Board:
                 self.field[int(location)].append(card)
                 self.playerOne.goal.remove(card)
 
+            x = 50
             for discardPile in self.playerOne.discard:
                 if len(discardPile) > 0:
                         card = discardPile[len(discardPile)-1]
@@ -157,6 +159,7 @@ class Board:
                     self.field[int(location)].append(card)
                     self.playerTwo.hand.remove(card)
 
+            x = 50
             if str(self.playerTwo.goal[0]) == value:
                 card = self.playerTwo.goal[0]
                 x += 91 * (int(location)+1)
@@ -164,6 +167,7 @@ class Board:
                 self.field[int(location)].append(card)
                 self.playerTwo.goal.remove(card)
 
+            x = 50
             for discardPile in self.playerTwo.discard:
                 if len(discardPile) > 0:
                         card = discardPile[len(discardPile)-1]
