@@ -1,7 +1,7 @@
 import pygame
 from Network import Network
 from Game import *
-import sys
+import sys,os
 
 # Create the window
 window = pygame.display.set_mode((800, 600))
@@ -15,6 +15,7 @@ class Display:
     def __init__(self):
         self.window = window
         #self.game = Board(0)
+        pygame.init()
         
         self.playerId = 1
         deck = Deck()
@@ -27,6 +28,10 @@ class Display:
                 key = f"{rank} of {suit}"
                 image = pygame.image.load(join("assets", suit, suit+rank+".png"))
                 self.cardImages.update({key : image})
+
+
+        self.assets_dir = os.path.join("assets", "font","PressStart2P-vaV7.ttf")
+        self.font = pygame.font.Font(self.assets_dir, 16)
 
 
     def deal(self):
@@ -44,6 +49,8 @@ class Display:
 
         #STEP: Repaint the background
         self.window.fill((0,100,0))
+
+        self.drawInfoBox()
 
         ySpaceing = 105
 
@@ -114,6 +121,29 @@ class Display:
                 else: 
                     self.window.blit(self.otherPlayerCard, self.game.playerTwo.hand[card])
 
+    def drawInfoBox(self):
+        rect = pygame.Rect(540, 10, 800-540, 200)
+        white = (255, 255, 255)
+
+        pygame.draw.rect(window, white, rect,5,25)
+
+        text = "You are \nPlayer {}".format(self.playerId+1)
+        text_surface = self.font.render(text, True, white)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (550+((800-540)//2), 35)
+        self.window.blit(text_surface, text_rect)
+
+        text = "Current Turn \n Player {}".format(self.game.currentTurn+1)
+        text_surface = self.font.render(text, True, white)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (550+((800-540)//2), 75)
+        self.window.blit(text_surface, text_rect)
+
+        text = "Waiting for\n Player {}".format(not self.game.ready)
+        text_surface = self.font.render(text, True, white)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (550+((800-540)//2), 120)
+        self.window.blit(text_surface, text_rect)
 
 
     def run(self):
