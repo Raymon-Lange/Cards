@@ -260,10 +260,5 @@ class Display:
 # Create the instance of the main class
 main_class = Display()
 
-
-#main_class.deal()
-#main_class.deal()
-#main_class.play()
-
 # Run the main loop
 main_class.run()

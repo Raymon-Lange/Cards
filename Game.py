@@ -218,32 +218,35 @@ class Board:
         #STEP: Check for first player
         if self.currentTurn == 0:
             #STEP: First check to see if we discarded a card
-            discardY = 155
-            x = 80
-            for num, discardPile in enumerate(self.playerOne.discard):
-                x += 20 + 71 
-                if len(discardPile) == 0:
-                    if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
-                        return "discard:"+ str(card)+":"+str(num)
-                else:
-                    if discardPile[0].rect.colliderect(card.rect):
-                        return "discard:"+ str(card)+":"+str(num)
+            #Check: we can only discard a card from our hand
+            if card in  self.playerOne.hand:
+                discardY = 155
+                x = 80
+                for num, discardPile in enumerate(self.playerOne.discard):
+                    x += 20 + 71 
+                    if len(discardPile) == 0:
+                        if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
+                            return "discard:"+ str(card)+":"+str(num)
+                    else:
+                        if discardPile[0].rect.colliderect(card.rect):
+                            return "discard:"+ str(card)+":"+str(num)
                     
                         
         if self.currentTurn == 1:
-             #STEP: First check to see if we discarded a card
-            discardY = 365
-            x = 80
-            for num, discardPile in enumerate(self.playerTwo.discard):
-                x += 20 + 71 
-                if len(discardPile) == 0:
-                    if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
-                        return "discard:"+ str(card)+":"+str(num)
-                else:
-                    if discardPile[0].rect.colliderect(card.rect):
-                        return "discard:"+ str(card)+":"+str(num)
+            #STEP: First check to see if we discarded a card
+            #Check: we can only discard a card from our hand
+            if card in  self.playerTwo.hand:
+                discardY = 365
+                x = 80
+                for num, discardPile in enumerate(self.playerTwo.discard):
+                    x += 20 + 71 
+                    if len(discardPile) == 0:
+                        if pygame.Rect(x,discardY, 71,94).colliderect(card.rect):
+                            return "discard:"+ str(card)+":"+str(num)
+                    else:
+                        if discardPile[0].rect.colliderect(card.rect):
+                            return "discard:"+ str(card)+":"+str(num)
                     
-
         return None
     
 
