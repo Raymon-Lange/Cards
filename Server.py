@@ -5,7 +5,7 @@ from Game import *
 import sys
 
 server = "192.168.86.42"
-port = 5555
+port = 8555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -32,8 +32,6 @@ def threaded_client(conn, p, gameId):
     while True:
         try:
             data = conn.recv(4096).decode()
-
-            print("Player", p, "from game id", gameId,"sent",data)
 
             if gameId in games:
                 board = games[gameId]
