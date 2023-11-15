@@ -91,7 +91,14 @@ class Display:
             if len(card) == 0:
                 pygame.draw.rect(self.window, (0, 255, 0), (x,y,71,94), 2)
             else:
-                self.drawCard(card[len(card)-1])
+                topcard = card[len(card)-1]
+                tmp = Deck()
+                if topcard.rank == "King":
+                    king = Card(topcard.suit, tmp.ranks[len(card)-1])
+                    king.rect = topcard.rect
+                    self.drawCard(king)
+                else:
+                    self.drawCard(topcard)
 
 
         #STEP: Draw Player Two

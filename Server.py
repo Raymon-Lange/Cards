@@ -5,7 +5,7 @@ from Game import *
 import sys
 
 server = "192.168.86.42"
-port = 8555
+port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
