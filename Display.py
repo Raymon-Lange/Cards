@@ -146,12 +146,33 @@ class Display:
         text_rect.center = (550+((800-540)//2), 75)
         self.window.blit(text_surface, text_rect)
 
-        text = "Waiting for\n Player {}".format(not self.game.ready)
+        text = "Player 1\n{} cards left".format(len(self.game.playerOne.goal))
         text_surface = self.font.render(text, True, white)
         text_rect = text_surface.get_rect()
         text_rect.center = (550+((800-540)//2), 120)
         self.window.blit(text_surface, text_rect)
 
+
+        text = "Player 2\n{} cards left".format(len(self.game.playerTwo.goal))
+        text_surface = self.font.render(text, True, white)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (550+((800-540)//2), 170)
+        self.window.blit(text_surface, text_rect)
+
+
+    def drawMissingPlayer(self):
+
+        rect = pygame.Rect((800 //2)-200, (600 // 2) -100, 300, 100)
+        white = (255, 255, 255)
+        black = (0,0,0)
+
+        pygame.draw.rect(window, white, rect,0,25)
+
+        text = "Waiting for a\nPlayer to Join"
+        text_surface = self.font.render(text, True, black)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (rect.x + 150, rect.y +50)
+        self.window.blit(text_surface, text_rect)
 
     def run(self):
         clock = pygame.time.Clock()
@@ -260,6 +281,9 @@ class Display:
                         self.activeCard.rect.move_ip(event.rel)
 
             self.drawBoard()
+
+            if not self.game.ready:    
+                self.drawMissingPlayer()
 
             # Update the window
             pygame.display.update()
