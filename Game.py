@@ -8,6 +8,7 @@ class Board:
         self.id = id
         self.ready = False
         self.currentTurn = 0 # either zero or one 
+        self.winner = None
 
         self.displayedCard = []
 
@@ -23,7 +24,7 @@ class Board:
 
         self.deck.shuffle()
 
-        for i in range(1,15):
+        for i in range(0,15):
             self.play("start::", 0)
             self.play("start::", 1)
 
@@ -41,12 +42,6 @@ class Board:
     def whoTurn(self):
         return self.currentTurn
     
-    def reset(self):
-        pass
-    
-    def checkValidMove(self, card):
-        pass
-
     def play(self,data, playerId):
         
         playerId = int(playerId)
@@ -85,6 +80,12 @@ class Board:
             self.dump.clear()
             print("We have reshuffled")
 
+        if len(self.playerOne.goal) == 0:
+            self.winner = 1
+
+        if len(self.playerTwo.goal) == 0:
+            self.winner = 2
+
                 
     def startGame(self, playerId):
         if playerId == 0:
@@ -99,7 +100,7 @@ class Board:
             self.playerTwo.goal[index].rect.y = 470
 
     def dealPlayer(self, playerId):
-        if playerId == 0:
+        if playerId == 0 and self.winner == None:
             while len(self.playerOne.hand) != 5:
                 self.playerOne.hand.append(self.deck.deal())
 
@@ -109,7 +110,7 @@ class Board:
                 y = 50
                 card.rect.x = x
                 card.rect.y = y
-        if playerId == 1:
+        if playerId == 1 and self.winner == None:
             while len(self.playerTwo.hand) != 5:
                 self.playerTwo.hand.append(self.deck.deal())
 

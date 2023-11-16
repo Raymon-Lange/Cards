@@ -58,9 +58,9 @@ class Display:
         x = 25
         y = 50
 
-        self.drawCard(self.game.playerOne.goal[0], 90)
+        if len(self.game.playerOne.goal) !=0:
+            self.drawCard(self.game.playerOne.goal[0], 90)
 
-        
         x = 50
 
         for card in range(0,5):
@@ -116,7 +116,8 @@ class Display:
         x = 25
         y += ySpaceing
 
-        self.drawCard(self.game.playerTwo.goal[0],90)
+        if len(self.game.playerTwo.goal) != 0:
+            self.drawCard(self.game.playerTwo.goal[0],90)
 
         x = 50
 
@@ -159,9 +160,7 @@ class Display:
         text_rect.center = (550+((800-540)//2), 170)
         self.window.blit(text_surface, text_rect)
 
-
     def drawMissingPlayer(self):
-
         rect = pygame.Rect((800 //2)-200, (600 // 2) -100, 300, 100)
         white = (255, 255, 255)
         black = (0,0,0)
@@ -169,6 +168,20 @@ class Display:
         pygame.draw.rect(window, white, rect,0,25)
 
         text = "Waiting for a\nPlayer to Join"
+        text_surface = self.font.render(text, True, black)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (rect.x + 150, rect.y +50)
+        self.window.blit(text_surface, text_rect)
+
+    def drawWinner(self):
+
+        rect = pygame.Rect((800 //2)-200, (600 // 2) -100, 300, 100)
+        white = (255, 255, 255)
+        black = (0,0,0)
+
+        pygame.draw.rect(window, white, rect,0,25)
+
+        text = "Player {} Won!".format(self.game.winner)
         text_surface = self.font.render(text, True, black)
         text_rect = text_surface.get_rect()
         text_rect.center = (rect.x + 150, rect.y +50)
@@ -284,6 +297,9 @@ class Display:
 
             if not self.game.ready:    
                 self.drawMissingPlayer()
+
+            if self.game.winner != None:
+                self.drawWinner()
 
             # Update the window
             pygame.display.update()
