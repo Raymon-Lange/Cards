@@ -207,7 +207,6 @@ class Display:
                     break
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-
                     if self.playerId == 0:
                         if self.activeCard == None:
                             for num, card in enumerate(self.game.playerOne.hand):
@@ -261,7 +260,7 @@ class Display:
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
-                        if self.activeCard != None:
+                        if self.activeCard != None and self.game.currentTurn == self.playerId:
                                     
                             data = self.game.playCard(self.activeCard)
 
