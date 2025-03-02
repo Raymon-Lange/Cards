@@ -24,7 +24,7 @@ class Board:
 
         self.deck.shuffle()
 
-        for i in range(0,15):
+        for i in range(0,20):
             self.play("start::", 0)
             self.play("start::", 1)
 

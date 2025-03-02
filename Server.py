@@ -1,34 +1,38 @@
 import socket
+import logging
 from _thread import *
 import pickle
 from Game import *
 import sys
 
-server = "192.168.86.42"
-port = 5555
+# Configure logger
+logging.basicConfig(filename='server.log',level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger("GameServer")
+
+server = '0.0.0.0'
+port = 5550
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    logger.error(f"Socket binding error: {e}")
+    sys.exit()
 
 s.listen(2)
-print("Waiting for a connection, Server Started")
+logger.info("Waiting for a connection, Server Started")
 
 connected = set()
 games = {}
 idCount = 0
 
-
 def threaded_client(conn, p, gameId):
     global idCount
     conn.send(str.encode(str(p)))
 
-    print("Player", p, "from game id", gameId)
+    logger.info(f"Player {p} connected to game {gameId}")
 
-    reply = ""
     while True:
         try:
             data = conn.recv(4096).decode()
@@ -41,38 +45,40 @@ def threaded_client(conn, p, gameId):
                 else:
                     if data == "reset":
                         board.reset()
+                        logger.info(f"Game {gameId} reset by Player {p}")
                     elif data != "get":
-                        board.play(data,p)
+                        board.play(data, p)
+                        logger.info(f"Game {gameId}: Player {p} played {data}")
 
                     conn.sendall(pickle.dumps(board))
             else:
                 break
         except Exception as error:
-            print("An error occured", error)
+            logger.error(f"An error occurred: {error}")
             break
 
-    print("Lost connection")
+    logger.info("Lost connection")
     try:
         del games[gameId]
-        print("Closing Game", gameId)
-    except:
+        logger.info(f"Closing Game {gameId}")
+    except KeyError:
         pass
     idCount -= 1
     conn.close()
 
 while True:
     conn, addr = s.accept()
-    print("Connected to:", addr)
+    logger.info(f"Connected to: {addr}")
 
     idCount += 1
     p = 0
-    gameId = (idCount - 1)//2
+    gameId = (idCount - 1) // 2
     if idCount % 2 == 1:
         games[gameId] = Board(gameId)
-        print("Creating a new game...")
+        logger.info(f"Creating a new game {gameId}")
     else:
         games[gameId].ready = True
         p = 1
-
+        logger.info(f"Game {gameId} is now ready")
 
     start_new_thread(threaded_client, (conn, p, gameId))

@@ -1,4 +1,9 @@
 *pyc
 woot.txt
 .vscode
+bin
+lib64
+venv
+pyvenv.cfg
+
 
