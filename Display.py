@@ -173,8 +173,45 @@ class Display:
         text_rect.center = (rect.x + 150, rect.y +50)
         self.window.blit(text_surface, text_rect)
 
+    def getPlayerName(self):
+
+        input_active = True
+        name = ""
+        #font = pygame.font.Font(self.assets_dir, 32)
+        input_box = pygame.Rect(300, 250, 200, 40)
+        color = pygame.Color('white')
+
+        while input_active:
+            self.window.fill((0, 100, 0))  # Repaint background
+            pygame.draw.rect(self.window, color, input_box, 2)
+
+            text_surface = self.font.render(name, True, (255, 255, 255))
+            self.window.blit(text_surface, (input_box.x + 5, input_box.y + 5))
+        
+            prompt_surface = self.font.render("Enter your name:", True, (255, 255, 255))
+            self.window.blit(prompt_surface, (input_box.x - 50, input_box.y - 50))
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        input_active = False  # Exit loop when Enter is pressed
+                    elif event.key == pygame.K_BACKSPACE:
+                        name = name[:-1]  # Remove last character
+                    else:
+                        name += event.unicode  # Add character
+
+        return name
+
+
     def run(self):
         clock = pygame.time.Clock()
+
+        name = self.getPlayerName()
 
         network = Network()
         self.playerId = int(network.getId())
@@ -215,7 +252,7 @@ class Display:
                                         self.activeCard = card
                                         self.orgX = card.rect.x
                                         self.orgY = card.rect.y
-    
+
                                 for discardPile in self.game.playerOne.discard:
                                     if len(discardPile) > 0:
                                         if discardPile[0].rect.collidepoint(event.pos):
@@ -224,14 +261,14 @@ class Display:
                                             self.activeCard = card
                                             self.orgX = card.rect.x
                                             self.orgY = card.rect.y
-                                
+
                                 if self.game.playerOne.goal[0].rect.collidepoint(event.pos):
                                         card = self.game.playerOne.goal[0]
                                         print("Clicked on", card)
                                         self.activeCard = card
                                         self.orgX = card.rect.x
                                         self.orgY = card.rect.y
-    
+
                         if self.playerId == 1:
                             if self.activeCard == None:
                                 for num, card in enumerate(self.game.playerTwo.hand):
@@ -240,7 +277,7 @@ class Display:
                                         self.activeCard = card
                                         self.orgX = card.rect.x
                                         self.orgY = card.rect.y
-    
+
                                 for discardPile in self.game.playerTwo.discard:
                                     if len(discardPile) > 0:
                                         if discardPile[0].rect.collidepoint(event.pos):
@@ -249,30 +286,30 @@ class Display:
                                             self.activeCard = card
                                             self.orgX = card.rect.x
                                             self.orgY = card.rect.y
-                                    
+
                                 if self.game.playerTwo.goal[0].rect.collidepoint(event.pos):
                                         card = self.game.playerTwo.goal[0]
                                         print("Clicked on", card)
                                         self.activeCard = card
                                         self.orgX = card.rect.x
                                         self.orgY = card.rect.y                               
-    
-    
+
+
                 if event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
                             if self.activeCard != None and self.game.currentTurn == self.playerId:
-                                        
+
                                 data = self.game.playCard(self.activeCard)
-    
+
                                 if data:
                                     #self.game.play(data, self.game.currentTurn) saved for local mode
                                     self.game = network.send(data)
                                 else:
                                     self.activeCard.move(self.orgX, self.orgY)
-                                
+
                                 self.activeCard = None
-    
-    
+
+
                 if event.type == pygame.MOUSEMOTION:
                     if self.activeCard != None:
                         #if event.rel[0] > 1 or event.rel[0] < -1 and event.rel[1] > 1 or event.rel[1] < -1:
