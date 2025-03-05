@@ -205,78 +205,78 @@ class Display:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     break
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if self.playerId == 0:
-                        if self.activeCard == None:
-                            for num, card in enumerate(self.game.playerOne.hand):
-                                if card.rect.collidepoint(event.pos):
-                                    print("Clicked on", card)
-                                    self.activeCard = card
-                                    self.orgX = card.rect.x
-                                    self.orgY = card.rect.y
-
-                            for discardPile in self.game.playerOne.discard:
-                                if len(discardPile) > 0:
-                                    if discardPile[0].rect.collidepoint(event.pos):
-                                        card = discardPile[len(discardPile)-1]
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if self.playerId == 0:
+                            if self.activeCard == None:
+                                for num, card in enumerate(self.game.playerOne.hand):
+                                    if card.rect.collidepoint(event.pos):
                                         print("Clicked on", card)
                                         self.activeCard = card
                                         self.orgX = card.rect.x
                                         self.orgY = card.rect.y
-                            
-                            if self.game.playerOne.goal[0].rect.collidepoint(event.pos):
-                                    card = self.game.playerOne.goal[0]
-                                    print("Clicked on", card)
-                                    self.activeCard = card
-                                    self.orgX = card.rect.x
-                                    self.orgY = card.rect.y
-
-                    if self.playerId == 1:
-                        if self.activeCard == None:
-                            for num, card in enumerate(self.game.playerTwo.hand):
-                                if card.rect.collidepoint(event.pos):
-                                    print("Clicked on", card)
-                                    self.activeCard = card
-                                    self.orgX = card.rect.x
-                                    self.orgY = card.rect.y
-
-                            for discardPile in self.game.playerTwo.discard:
-                                if len(discardPile) > 0:
-                                    if discardPile[0].rect.collidepoint(event.pos):
-                                        card = discardPile[len(discardPile)-1]
-                                        print("Clicked on discared", card)
+    
+                                for discardPile in self.game.playerOne.discard:
+                                    if len(discardPile) > 0:
+                                        if discardPile[0].rect.collidepoint(event.pos):
+                                            card = discardPile[len(discardPile)-1]
+                                            print("Clicked on", card)
+                                            self.activeCard = card
+                                            self.orgX = card.rect.x
+                                            self.orgY = card.rect.y
+                                
+                                if self.game.playerOne.goal[0].rect.collidepoint(event.pos):
+                                        card = self.game.playerOne.goal[0]
+                                        print("Clicked on", card)
                                         self.activeCard = card
                                         self.orgX = card.rect.x
                                         self.orgY = card.rect.y
-                                
-                            if self.game.playerTwo.goal[0].rect.collidepoint(event.pos):
-                                    card = self.game.playerTwo.goal[0]
-                                    print("Clicked on", card)
-                                    self.activeCard = card
-                                    self.orgX = card.rect.x
-                                    self.orgY = card.rect.y                               
-
-
-            if event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                        if self.activeCard != None and self.game.currentTurn == self.playerId:
+    
+                        if self.playerId == 1:
+                            if self.activeCard == None:
+                                for num, card in enumerate(self.game.playerTwo.hand):
+                                    if card.rect.collidepoint(event.pos):
+                                        print("Clicked on", card)
+                                        self.activeCard = card
+                                        self.orgX = card.rect.x
+                                        self.orgY = card.rect.y
+    
+                                for discardPile in self.game.playerTwo.discard:
+                                    if len(discardPile) > 0:
+                                        if discardPile[0].rect.collidepoint(event.pos):
+                                            card = discardPile[len(discardPile)-1]
+                                            print("Clicked on discared", card)
+                                            self.activeCard = card
+                                            self.orgX = card.rect.x
+                                            self.orgY = card.rect.y
                                     
-                            data = self.game.playCard(self.activeCard)
-
-                            if data:
-                                #self.game.play(data, self.game.currentTurn) saved for local mode
-                                self.game = network.send(data)
-                            else:
-                                self.activeCard.move(self.orgX, self.orgY)
-                            
-                            self.activeCard = None
-
-
-            if event.type == pygame.MOUSEMOTION:
-                if self.activeCard != None:
-                    #if event.rel[0] > 1 or event.rel[0] < -1 and event.rel[1] > 1 or event.rel[1] < -1:
-                        self.activeCard.rect.move_ip(event.rel)
+                                if self.game.playerTwo.goal[0].rect.collidepoint(event.pos):
+                                        card = self.game.playerTwo.goal[0]
+                                        print("Clicked on", card)
+                                        self.activeCard = card
+                                        self.orgX = card.rect.x
+                                        self.orgY = card.rect.y                               
+    
+    
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                            if self.activeCard != None and self.game.currentTurn == self.playerId:
+                                        
+                                data = self.game.playCard(self.activeCard)
+    
+                                if data:
+                                    #self.game.play(data, self.game.currentTurn) saved for local mode
+                                    self.game = network.send(data)
+                                else:
+                                    self.activeCard.move(self.orgX, self.orgY)
+                                
+                                self.activeCard = None
+    
+    
+                if event.type == pygame.MOUSEMOTION:
+                    if self.activeCard != None:
+                        #if event.rel[0] > 1 or event.rel[0] < -1 and event.rel[1] > 1 or event.rel[1] < -1:
+                            self.activeCard.rect.move_ip(event.rel)
 
             self.drawBoard()
 
