@@ -1,4 +1,5 @@
 import pygame
+from enum import Enum, auto
 from Network import Network
 from Game import *
 import sys,os
@@ -9,12 +10,47 @@ window = pygame.display.set_mode((800, 600))
 # Set the background color
 window.fill((0, 100, 0))
 
+# Load background
+background = pygame.image.load("assets/background.png")
+
+# Colors
+# Colors
+WHITE = (255, 255, 255)
+DARK_GREEN = (0, 100, 0)
+BUTTON_COLOR = (17,60,24)
+HOVER_COLOR = (7,24,10)
+
+# Button class
+class Button:
+    def __init__(self, text, x, y, width, height, callback):
+        self.text = text
+        self.rect = pygame.Rect(x, y, width, height)
+        self.callback = callback
+        self.assets_dir = os.path.join("assets", "font","PressStart2P-vaV7.ttf")
+        self.font = pygame.font.Font(self.assets_dir, 16)
+
+    def draw(self, surface, mouse_pos):
+        color = HOVER_COLOR if self.rect.collidepoint(mouse_pos) else BUTTON_COLOR
+        pygame.draw.rect(surface, color, self.rect, border_radius=10)
+        text_surface = self.font.render(self.text, True, WHITE)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+            self.callback()
+
+class GameState(Enum):
+    MENU = auto()
+    PLAYING = auto()
+    OPTIONS = auto()
+
 # Create the main class
 class Display:
 
     def __init__(self):
         self.window = window
-        #self.game = Board(0)
+        self.game = Board(0)
         pygame.init()
         
         self.playerId = 1
@@ -33,6 +69,24 @@ class Display:
         self.assets_dir = os.path.join("assets", "font","PressStart2P-vaV7.ttf")
         self.font = pygame.font.Font(self.assets_dir, 16)
 
+        # Create buttons
+        self.buttons = [
+            Button("Multiplayer", 280, 250, 220, 60, self.on_multiplayer),
+            Button("Single Player", 280, 330, 220, 60, self.on_singleplayer),
+            Button("Options", 280, 410, 220, 60, self.on_options)
+        ]
+
+        self.state = GameState.MENU
+        # Button callbacks
+    def on_multiplayer(self):
+        self.state = GameState.PLAYING
+        print("Multiplayer clicked!")
+
+    def on_singleplayer(self):
+        print("Single Player clicked!")
+
+    def on_options(self):
+        print("Options clicked!")
 
     def deal(self):
         self.game.play("deal::", 0)
@@ -70,7 +124,6 @@ class Display:
                     self.drawCard(self.game.playerOne.hand[card])
                 else:
                     self.window.blit(self.otherPlayerCard, self.game.playerOne.hand[card])
-
 
         x = 80
         y += ySpaceing
@@ -153,7 +206,6 @@ class Display:
         text_rect.center = (550+((800-540)//2), 120)
         self.window.blit(text_surface, text_rect)
 
-
         text = "Player 2\n{} cards left".format(len(self.game.playerTwo.goal))
         text_surface = self.font.render(text, True, white)
         text_rect = text_surface.get_rect()
@@ -207,11 +259,25 @@ class Display:
 
         return name
 
+    def drawLoadingScreen(self):
+        self.window.blit(background, (0, 0))
+        mouse_pos = pygame.mouse.get_pos()
+
+        for button in self.buttons:
+            button.draw(self.window, mouse_pos)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            for button in self.buttons:
+                button.handle_event(event)
+        pygame.display.flip()
+
 
     def run(self):
         clock = pygame.time.Clock()
 
-        name = self.getPlayerName()
+        #name = self.getPlayerName()
 
         network = Network()
         self.playerId = int(network.getId())
@@ -222,14 +288,9 @@ class Display:
         self.orgX = 0
         self.orgY = 0
 
-        try:
-            self.game = network.send("get")
-            print(sys.getsizeof(self.game))
-        except:
-            run = False
-            print("Couldn't get game")
-            exit()
-
+        if self.state == GameState.MENU:
+            while self.state == GameState.MENU:
+                self.drawLoadingScreen()
 
         while True:
 
