@@ -273,108 +273,55 @@ class Display:
                 button.handle_event(event)
         pygame.display.flip()
 
-
     def run(self):
+        while True:
+            if self.state == GameState.MENU:
+                self.handle_menu()
+            elif self.state == GameState.PLAYING:
+                self.handle_multiplayer()
+            elif self.state == GameState.OPTIONS:
+                self.handle_options()
+            else:
+                print("No State!!!")
+                break  
+
+    def handle_menu(self):
+        while self.state == GameState.MENU:
+            self.drawLoadingScreen()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+    def handle_multiplayer(self):
         clock = pygame.time.Clock()
 
-        #name = self.getPlayerName()
+        self.network = Network()
+        self.playerId = int(self.network.getId())
 
-        network = Network()
-        self.playerId = int(network.getId())
-
-        print("You are player", self.playerId)
-        
         self.activeCard = None
         self.orgX = 0
         self.orgY = 0
 
-        if self.state == GameState.MENU:
-            while self.state == GameState.MENU:
-                self.drawLoadingScreen()
-
-        while True:
-
+        while self.state == GameState.PLAYING:
             clock.tick(60)
 
             if self.game.currentTurn != self.playerId:
-                self.game = network.send("get")
-            # Check for events
+                self.game = self.network.send("get")
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    break
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        if self.playerId == 0:
-                            if self.activeCard == None:
-                                for num, card in enumerate(self.game.playerOne.hand):
-                                    if card.rect.collidepoint(event.pos):
-                                        print("Clicked on", card)
-                                        self.activeCard = card
-                                        self.orgX = card.rect.x
-                                        self.orgY = card.rect.y
+                    return
 
-                                for discardPile in self.game.playerOne.discard:
-                                    if len(discardPile) > 0:
-                                        if discardPile[0].rect.collidepoint(event.pos):
-                                            card = discardPile[len(discardPile)-1]
-                                            print("Clicked on", card)
-                                            self.activeCard = card
-                                            self.orgX = card.rect.x
-                                            self.orgY = card.rect.y
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    self.handle_mouse_down(event.pos)
 
-                                if self.game.playerOne.goal[0].rect.collidepoint(event.pos):
-                                        card = self.game.playerOne.goal[0]
-                                        print("Clicked on", card)
-                                        self.activeCard = card
-                                        self.orgX = card.rect.x
-                                        self.orgY = card.rect.y
-
-                        if self.playerId == 1:
-                            if self.activeCard == None:
-                                for num, card in enumerate(self.game.playerTwo.hand):
-                                    if card.rect.collidepoint(event.pos):
-                                        print("Clicked on", card)
-                                        self.activeCard = card
-                                        self.orgX = card.rect.x
-                                        self.orgY = card.rect.y
-
-                                for discardPile in self.game.playerTwo.discard:
-                                    if len(discardPile) > 0:
-                                        if discardPile[0].rect.collidepoint(event.pos):
-                                            card = discardPile[len(discardPile)-1]
-                                            print("Clicked on discared", card)
-                                            self.activeCard = card
-                                            self.orgX = card.rect.x
-                                            self.orgY = card.rect.y
-
-                                if self.game.playerTwo.goal[0].rect.collidepoint(event.pos):
-                                        card = self.game.playerTwo.goal[0]
-                                        print("Clicked on", card)
-                                        self.activeCard = card
-                                        self.orgX = card.rect.x
-                                        self.orgY = card.rect.y                               
-
-
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 1:
-                            if self.activeCard != None and self.game.currentTurn == self.playerId:
-
-                                data = self.game.playCard(self.activeCard)
-
-                                if data:
-                                    #self.game.play(data, self.game.currentTurn) saved for local mode
-                                    self.game = network.send(data)
-                                else:
-                                    self.activeCard.move(self.orgX, self.orgY)
-
-                                self.activeCard = None
-
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    self.handle_mouse_up()
 
                 if event.type == pygame.MOUSEMOTION:
-                    if self.activeCard != None:
-                        #if event.rel[0] > 1 or event.rel[0] < -1 and event.rel[1] > 1 or event.rel[1] < -1:
-                            self.activeCard.rect.move_ip(event.rel)
+                    self.handle_mouse_motion(event.rel)
 
             self.drawBoard()
 
@@ -386,6 +333,57 @@ class Display:
 
             # Update the window
             pygame.display.update()
+
+
+    def handle_mouse_down(self, pos):
+        if self.activeCard is not None:
+            return
+
+        player = self.game.playerOne if self.playerId == 0 else self.game.playerTwo
+
+        self.try_select_card_from_list(player.hand, pos)
+        self.try_select_card_from_discard(player.discard, pos)
+        self.try_select_card(player.goal[0], pos)
+
+    def try_select_card_from_list(self, cards, pos):
+        for card in cards:
+            if card.rect.collidepoint(pos):
+                self.set_active_card(card)
+                print("Clicked on", card)
+                return
+
+    def try_select_card_from_discard(self, discard_piles, pos):
+        for pile in discard_piles:
+            if pile and pile[0].rect.collidepoint(pos):
+                card = pile[-1]
+                self.set_active_card(card)
+                print("Clicked on discard", card)
+                return
+
+    def try_select_card(self, card, pos):
+        if card.rect.collidepoint(pos):
+            self.set_active_card(card)
+            print("Clicked on", card)
+
+    def set_active_card(self, card):
+        self.activeCard = card
+        self.orgX = card.rect.x
+        self.orgY = card.rect.y
+
+    def handle_mouse_up(self):
+        if self.activeCard and self.game.currentTurn == self.playerId:
+            data = self.game.playCard(self.activeCard)
+
+            if data:
+                self.game = self.network.send(data)
+            else:
+                self.activeCard.move(self.orgX, self.orgY)
+
+            self.activeCard = None
+
+    def handle_mouse_motion(self, rel):
+        if self.activeCard:
+            self.activeCard.rect.move_ip(rel)
 
 # Create the instance of the main class
 main_class = Display()
