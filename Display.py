@@ -14,11 +14,13 @@ window.fill((0, 100, 0))
 background = pygame.image.load("assets/background.png")
 
 # Colors
-# Colors
+
 WHITE = (255, 255, 255)
 DARK_GREEN = (0, 100, 0)
 BUTTON_COLOR = (17,60,24)
 HOVER_COLOR = (7,24,10)
+BLACK = (0, 0, 0)
+GREY = (200, 200, 200)
 
 # Button class
 class Button:
@@ -28,17 +30,30 @@ class Button:
         self.callback = callback
         self.assets_dir = os.path.join("assets", "font","PressStart2P-vaV7.ttf")
         self.font = pygame.font.Font(self.assets_dir, 16)
+        self.bg_color = BUTTON_COLOR
+        self.text_color =  WHITE
+        self.border_color = BLACK
+        self.hover_color = HOVER_COLOR
+        self.border_width = 2
+        self.border_radius = 10
 
-    def draw(self, surface, mouse_pos):
-        color = HOVER_COLOR if self.rect.collidepoint(mouse_pos) else BUTTON_COLOR
-        pygame.draw.rect(surface, color, self.rect, border_radius=10)
-        text_surface = self.font.render(self.text, True, WHITE)
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        surface.blit(text_surface, text_rect)
+    def draw(self, surface):
+        mouse_pos = pygame.mouse.get_pos()
+        is_hovered = self.rect.collidepoint(mouse_pos)
+
+        current_color = self.hover_color if is_hovered else self.bg_color
+
+        pygame.draw.rect(surface, current_color, self.rect, 0, self.border_radius)
+        pygame.draw.rect(surface, self.border_color, self.rect, self.border_width, self.border_radius)
+
+        text_surf = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        surface.blit(text_surf, text_rect)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.callback()
+
 
 class GameState(Enum):
     MENU = auto()
@@ -69,24 +84,38 @@ class Display:
         self.assets_dir = os.path.join("assets", "font","PressStart2P-vaV7.ttf")
         self.font = pygame.font.Font(self.assets_dir, 16)
 
+        box_rect = pygame.Rect((800 // 2) - 200, (600 // 2) - 100, 300, 100)
+        button_rect = pygame.Rect(box_rect.centerx - 40, box_rect.bottom - 40, 80, 30)
+
         # Create buttons
-        self.buttons = [
+        self.menuButtons = [
             Button("Multiplayer", 280, 250, 220, 60, self.on_multiplayer),
             Button("Single Player", 280, 330, 220, 60, self.on_singleplayer),
-            Button("Options", 280, 410, 220, 60, self.on_options)
+            Button("Options", 280, 410, 220, 60, self.on_options),
+            
+        ]
+
+        self.playingButtons = [
+            Button("OK", button_rect.x , button_rect.y , 80, 30, self.ok_button)
         ]
 
         self.state = GameState.MENU
-        # Button callbacks
-    def on_multiplayer(self):
-        self.state = GameState.PLAYING
-        print("Multiplayer clicked!")
 
-    def on_singleplayer(self):
-        print("Single Player clicked!")
+    def run(self):
+        while True:
+            if self.state == GameState.MENU:
+                self.handle_menu()
+            elif self.state == GameState.PLAYING:
+                self.handle_multiplayer()
+            elif self.state == GameState.OPTIONS:
+                self.handle_options()
+            else:
+                print("No State!!!")
+                break  
 
-    def on_options(self):
-        print("Options clicked!")
+    ########################################
+    # Drawling Game Helper Methods
+    ########################################
 
     def deal(self):
         self.game.play("deal::", 0)
@@ -194,6 +223,9 @@ class Display:
         text_rect.center = (550+((800-540)//2), 35)
         self.window.blit(text_surface, text_rect)
 
+        if self.game == None:
+            return
+
         text = "Current Turn \n Player {}".format(self.game.currentTurn+1)
         text_surface = self.font.render(text, True, white)
         text_rect = text_surface.get_rect()
@@ -212,18 +244,30 @@ class Display:
         text_rect.center = (550+((800-540)//2), 170)
         self.window.blit(text_surface, text_rect)
 
-    def drawNoficationBox(self, text):
-        rect = pygame.Rect((800 //2)-200, (600 // 2) -100, 300, 100)
+    def drawNoficationBox(self, text, callback=None):
+        box_rect = pygame.Rect((800 // 2) - 200, (600 // 2) - 100, 300, 100)
+        button_rect = pygame.Rect(box_rect.centerx - 40, box_rect.bottom - 40, 80, 30)
+    
         white = (255, 255, 255)
-        black = (0,0,0)
-
-        pygame.draw.rect(window, white, rect,0,25)
-        pygame.draw.rect(window, black, rect,5,25)
-
+        black = (0, 0, 0)
+        grey = (200, 200, 200)
+    
+        # Draw notification box
+        pygame.draw.rect(self.window, white, box_rect, 0, 25)
+        pygame.draw.rect(self.window, black, box_rect, 5, 25)
+    
+        # Draw text
         text_surface = self.font.render(text, True, black)
-        text_rect = text_surface.get_rect()
-        text_rect.center = (rect.x + 150, rect.y +50)
+        text_rect = text_surface.get_rect(center=(box_rect.centerx, box_rect.centery - 20))
         self.window.blit(text_surface, text_rect)
+        
+        #Define and draw button
+        if callback:
+            button = Button("OK", button_rect.x , button_rect.y , 80, 30, callback)
+            button.draw(self.window)
+
+    def ok_button(self):
+        self.state = GameState.MENU
 
     def getPlayerName(self):
 
@@ -259,31 +303,32 @@ class Display:
 
         return name
 
+    ########################################
+    # Menu Screen Section 
+    ########################################
     def drawLoadingScreen(self):
         self.window.blit(background, (0, 0))
         mouse_pos = pygame.mouse.get_pos()
 
-        for button in self.buttons:
-            button.draw(self.window, mouse_pos)
+        for button in self.menuButtons:
+            button.draw(self.window)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            for button in self.buttons:
+            for button in self.menuButtons:
                 button.handle_event(event)
         pygame.display.flip()
 
-    def run(self):
-        while True:
-            if self.state == GameState.MENU:
-                self.handle_menu()
-            elif self.state == GameState.PLAYING:
-                self.handle_multiplayer()
-            elif self.state == GameState.OPTIONS:
-                self.handle_options()
-            else:
-                print("No State!!!")
-                break  
+    def on_multiplayer(self):
+        self.state = GameState.PLAYING
+        print("Multiplayer clicked!")
+
+    def on_singleplayer(self):
+        print("Single Player clicked!")
+
+    def on_options(self):
+        print("Options clicked!")
 
     def handle_menu(self):
         while self.state == GameState.MENU:
@@ -293,8 +338,13 @@ class Display:
                     pygame.quit()
                     exit()
 
+    ########################################
+    # Multiplayer Section 
+    ########################################
+
     def handle_multiplayer(self):
         clock = pygame.time.Clock()
+        self.game = Board(0)
 
         self.network = Network()
         self.playerId = int(self.network.getId())
@@ -306,13 +356,20 @@ class Display:
         while self.state == GameState.PLAYING:
             clock.tick(60)
 
-            if self.game.currentTurn != self.playerId:
+            if self.game.currentTurn != self.playerId and self.game.winner == None:
                 self.game = self.network.send("get")
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return
+                
+                for button in self.playingButtons:
+                    button.handle_event(event)
+
+                #if there is a winner no need to check for card movement
+                if self.game.winner != None:
+                    break
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.handle_mouse_down(event.pos)
@@ -329,11 +386,10 @@ class Display:
                 self.drawNoficationBox("Waiting for a\nPlayer to Join")
 
             if self.game.winner != None:
-                self.drawNoficationBox("Player {} Won!".format(self.game.winner))
+                self.drawNoficationBox("Player {} Won!".format(self.game.winner), self.ok_button)
 
             # Update the window
             pygame.display.update()
-
 
     def handle_mouse_down(self, pos):
         if self.activeCard is not None:

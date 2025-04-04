@@ -14,7 +14,6 @@ class Board:
 
         self.activeCard = None
 
-
         #Game Objects
         self.playerOne = Player("One")
         self.playerTwo = Player("Two")
@@ -85,7 +84,6 @@ class Board:
 
         if len(self.playerTwo.goal) == 0:
             self.winner = 2
-
                 
     def startGame(self, playerId):
         if playerId == 0:
