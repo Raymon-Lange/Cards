@@ -77,7 +77,8 @@ while True:
         games[gameId] = Board(gameId)
         logger.info(f"Creating a new game {gameId}")
     else:
-        games[gameId].ready = True
+        #games[gameId].ready = True
+        games[gameId].startGame()
         p = 1
         logger.info(f"Game {gameId} is now ready")
 

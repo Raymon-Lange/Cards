@@ -21,19 +21,6 @@ class Board:
         self.field = [[],[],[],[]]
         self.dump = []
 
-        self.deck.shuffle()
-
-        for i in range(0,20):
-            self.play("start::", 0)
-            self.play("start::", 1)
-
-        if self.deck.compare(self.playerOne.goal[0], self.playerTwo.goal[0]):
-            self.currentTurn = 0
-        else:
-            self.currentTurn = 1
-
-        self.dealPlayer(self.currentTurn)
-
 
     def connected(self):
         return self.ready
@@ -52,7 +39,7 @@ class Board:
         if action == "deal":
             self.dealPlayer(playerId)
         if action == "start":
-            self.startGame(playerId)
+            self.startGame()
         if action == "discard":
             self.discard(value, location, playerId)
             self.currentTurn = (self.currentTurn + 1) % 2
@@ -85,17 +72,28 @@ class Board:
         if len(self.playerTwo.goal) == 0:
             self.winner = 2
                 
-    def startGame(self, playerId):
-        if playerId == 0:
+    def startGame(self):
+        self.deck.shuffle()
+
+        for i in range(0,20):
             self.playerOne.goal.append(self.deck.deal())
             index = len(self.playerOne.goal) - 1
             self.playerOne.goal[index].rect.x = 25
             self.playerOne.goal[index].rect.y = 50
-        if playerId == 1:
+
             self.playerTwo.goal.append(self.deck.deal())
             index = len(self.playerTwo.goal) - 1
             self.playerTwo.goal[index].rect.x = 25
             self.playerTwo.goal[index].rect.y = 470
+
+        if self.deck.compare(self.playerOne.goal[0], self.playerTwo.goal[0]):
+            self.currentTurn = 0
+        else:
+            self.currentTurn = 1
+
+        self.dealPlayer(self.currentTurn)
+
+        self.ready = True
 
     def dealPlayer(self, playerId):
         if playerId == 0 and self.winner == None:

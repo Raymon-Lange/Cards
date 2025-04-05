@@ -59,6 +59,7 @@ class GameState(Enum):
     MENU = auto()
     PLAYING = auto()
     OPTIONS = auto()
+    CONNECTING  = auto()
 
 # Create the main class
 class Display:
@@ -109,7 +110,9 @@ class Display:
                 self.handle_multiplayer()
             elif self.state == GameState.OPTIONS:
                 self.handle_options()
-            else:
+            elif self.state == GameState.CONNECTING:
+                self.handleConnecting()
+            else:   
                 print("No State!!!")
                 break  
 
@@ -321,7 +324,7 @@ class Display:
         pygame.display.flip()
 
     def on_multiplayer(self):
-        self.state = GameState.PLAYING
+        self.state = GameState.CONNECTING
         print("Multiplayer clicked!")
 
     def on_singleplayer(self):
@@ -339,15 +342,49 @@ class Display:
                     exit()
 
     ########################################
+    # Connecting  Section 
+    ########################################
+
+
+    def handleConnecting(self):
+        self.network = Network()
+        self.playerId = int(self.network.getId())
+
+        while self.state == GameState.CONNECTING:
+
+            self.game = self.network.send("get")
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                
+                for button in self.playingButtons:
+                    button.handle_event(event)
+            
+            self.drawBoard()
+
+            if not self.game.ready:    
+                self.drawNoficationBox("Waiting for a\nPlayer to Join")                
+            else:
+                print("Game is ready")
+                #self.game = self.network.send("start")
+                self.state = GameState.PLAYING
+
+            # Update the window
+            pygame.display.update()
+
+    
+    ########################################
     # Multiplayer Section 
     ########################################
 
     def handle_multiplayer(self):
         clock = pygame.time.Clock()
-        self.game = Board(0)
+        #self.game = Board(0)
 
-        self.network = Network()
-        self.playerId = int(self.network.getId())
+        #self.network = Network()
+        #self.playerId = int(self.network.getId())
 
         self.activeCard = None
         self.orgX = 0
@@ -355,6 +392,9 @@ class Display:
 
         while self.state == GameState.PLAYING:
             clock.tick(60)
+
+            if self.game == None:
+                self.game = self.network.send("get")
 
             if self.game.currentTurn != self.playerId and self.game.winner == None:
                 self.game = self.network.send("get")
