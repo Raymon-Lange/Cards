@@ -63,7 +63,6 @@ def threaded_client(conn, p, gameId):
         logger.info(f"Closing Game {gameId}")
     except KeyError:
         pass
-    #idCount -= 1 Do we really care that lost connection
     conn.close()
 
 while True:
@@ -77,7 +76,6 @@ while True:
         games[gameId] = Board(gameId)
         logger.info(f"Creating a new game {gameId}")
     else:
-        #games[gameId].ready = True
         games[gameId].startGame()
         p = 1
         logger.info(f"Game {gameId} is now ready")
