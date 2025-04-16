@@ -248,25 +248,26 @@ class Display:
         self.window.blit(text_surface, text_rect)
 
     def drawNoficationBox(self, text, callback=None):
-        box_rect = pygame.Rect((800 // 2) - 200, (600 // 2) - 100, 300, 100)
-        button_rect = pygame.Rect(box_rect.centerx - 40, box_rect.bottom - 40, 80, 30)
-    
-        white = (255, 255, 255)
-        black = (0, 0, 0)
-        grey = (200, 200, 200)
-    
+
+        text_surface = self.font.render(text, True, BLACK)
+        #if we have callback, make room for the ok Button
+        if callback:
+            box_rect = pygame.Rect((800 // 2) - 200, (600 // 2) - 100, 300, 100)
+            text_rect = text_surface.get_rect(center=(box_rect.centerx, box_rect.centery- 20))
+        else:  
+            box_rect = pygame.Rect((800 // 2) - 200, (600 // 2) - 100, 300, 80)
+            text_rect = text_surface.get_rect(center=(box_rect.centerx, box_rect.centery))
+
         # Draw notification box
-        pygame.draw.rect(self.window, white, box_rect, 0, 25)
-        pygame.draw.rect(self.window, black, box_rect, 5, 25)
+        pygame.draw.rect(self.window, WHITE, box_rect, 0, 25)
+        pygame.draw.rect(self.window, BLACK, box_rect, 5, 25)
     
         # Draw text
-        text_surface = self.font.render(text, True, black)
-        text_rect = text_surface.get_rect(center=(box_rect.centerx, box_rect.centery - 20))
         self.window.blit(text_surface, text_rect)
         
         #Define and draw button
         if callback:
-            button = Button("OK", button_rect.x , button_rect.y , 80, 30, callback)
+            button = self.playingButtons[0]
             button.draw(self.window)
 
     def ok_button(self):
@@ -368,7 +369,6 @@ class Display:
                 self.drawNoficationBox("Waiting for a\nPlayer to Join")                
             else:
                 print("Game is ready")
-                #self.game = self.network.send("start")
                 self.state = GameState.PLAYING
 
             # Update the window
@@ -381,10 +381,6 @@ class Display:
 
     def handle_multiplayer(self):
         clock = pygame.time.Clock()
-        #self.game = Board(0)
-
-        #self.network = Network()
-        #self.playerId = int(self.network.getId())
 
         self.activeCard = None
         self.orgX = 0

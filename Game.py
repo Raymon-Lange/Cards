@@ -32,8 +32,6 @@ class Board:
         
         playerId = int(playerId)
 
-        print("from player",playerId," move", data)
-
         action, value, location = data.split(':')
 
         if action == "deal":
@@ -75,7 +73,7 @@ class Board:
     def startGame(self):
         self.deck.shuffle()
 
-        for i in range(0,20):
+        for i in range(0,2):
             self.playerOne.goal.append(self.deck.deal())
             index = len(self.playerOne.goal) - 1
             self.playerOne.goal[index].rect.x = 25
