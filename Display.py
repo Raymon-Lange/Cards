@@ -68,6 +68,8 @@ class Display:
         self.window = window
         self.game = Board(0)
         pygame.init()
+        pygame.mixer.init()
+        pygame.display.set_caption("Spite and Malice")
         
         self.playerId = 1
         deck = Deck()
@@ -99,6 +101,11 @@ class Display:
         self.playingButtons = [
             Button("OK", button_rect.x , button_rect.y , 80, 30, self.ok_button)
         ]
+
+        # Load sounds 
+
+        self.cardDrop = pygame.mixer.Sound(join("assets", "sounds", "carddrop.wav"))
+        self.cardDrop.set_volume(0.5)
 
         self.state = GameState.MENU
 
@@ -472,6 +479,7 @@ class Display:
                 self.activeCard.move(self.orgX, self.orgY)
 
             self.activeCard = None
+            self.cardDrop.play()
 
     def handle_mouse_motion(self, rel):
         if self.activeCard:
