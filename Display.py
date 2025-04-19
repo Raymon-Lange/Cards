@@ -21,6 +21,7 @@ BUTTON_COLOR = (17,60,24)
 HOVER_COLOR = (7,24,10)
 BLACK = (0, 0, 0)
 GREY = (200, 200, 200)
+DARK_GREY = (100, 100, 100)
 
 # Button class
 class Button:
@@ -53,6 +54,64 @@ class Button:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             self.callback()
+
+
+class ToggleButton(Button):
+    def __init__(self, text, x, y, w, h, callback, initial_state=True):
+        super().__init__(text, x, y, w, h, callback)
+        self.state = initial_state
+
+    def draw(self, surface):
+        label_text = f"{self.text}: {'ON' if self.state else 'OFF'}"
+        pygame.draw.rect(surface, GREY, self.rect)
+        pygame.draw.rect(surface, BLACK, self.rect, 2)
+        label = self.font.render(label_text, True, BLACK)
+        surface.blit(label, label.get_rect(center=self.rect.center))
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+            self.state = not self.state
+            self.callback(self.state)
+
+
+class Slider:
+    def __init__(self, label, x, y, w, h, min_value, max_value, initial, on_change):
+        self.label = label
+        self.rect = pygame.Rect(x, y, w, h)
+        self.slider_rect = pygame.Rect(x, y - 5, 10, h + 10)
+        self.min = min_value
+        self.max = max_value
+        self.value = initial
+        self.dragging = False
+        self.on_change = on_change
+        self.assets_dir = os.path.join("assets", "font","PressStart2P-vaV7.ttf")
+        self.font = pygame.font.Font(self.assets_dir, 16)
+        self.update_slider_pos()
+
+    def update_slider_pos(self):
+        percent = (self.value - self.min) / (self.max - self.min)
+        self.slider_rect.centerx = self.rect.x + int(percent * self.rect.width)
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, DARK_GREY, self.rect)
+        pygame.draw.rect(surface, BLACK, self.rect, 2)
+        pygame.draw.rect(surface, GREY, self.slider_rect)
+        pygame.draw.rect(surface, BLACK, self.slider_rect, 1)
+        text = self.font.render(f"{self.label}: {self.value}", True, BLACK)
+        surface.blit(text, (self.rect.x, self.rect.y - 25))
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and self.slider_rect.collidepoint(event.pos):
+            self.dragging = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.dragging = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging:
+            new_x = max(self.rect.x, min(event.pos[0], self.rect.right))
+            percent = (new_x - self.rect.x) / self.rect.width
+            self.value = int(self.min + percent * (self.max - self.min))
+            self.update_slider_pos()
+            self.on_change(self.value)
+
 
 
 class GameState(Enum):
@@ -102,10 +161,20 @@ class Display:
             Button("OK", button_rect.x , button_rect.y , 80, 30, self.ok_button)
         ]
 
-        # Load sounds 
+        self.optionsButtons = [
+            Button("Back", 50, 500, 100, 40, self.on_back),
+            ToggleButton("Sound", 50, 250, 150, 40, self.toggle_sound, initial_state=True),
+            Slider("Volume", 50, 330, 300, 20, min_value=1, max_value=100, initial=50, on_change=self.set_volume),    
+        ]
 
+        # Load sounds 
+        self.muted = False
+        self.volume = 50/100
         self.cardDrop = pygame.mixer.Sound(join("assets", "sounds", "carddrop.wav"))
-        self.cardDrop.set_volume(0.5)
+        self.cardDrop.set_volume(self.volume)
+
+        self.cardshuffle = pygame.mixer.Sound(join("assets", "sounds", "cardsShuffling.wav"))
+        self.cardshuffle.set_volume(self.volume)
 
         self.state = GameState.MENU
 
@@ -280,6 +349,52 @@ class Display:
     def ok_button(self):
         self.state = GameState.MENU
 
+    ########################################
+    # Option Screen Section 
+    ########################################
+
+    def handle_options(self):
+        while self.state == GameState.OPTIONS:
+            # Repaint the background
+            self.drawOptionsScreen()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+    def drawOptionsScreen(self):
+        self.window.blit(background, (0, 0))
+
+        for button in self.optionsButtons:
+            button.draw(self.window)
+            
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            for button in self.optionsButtons:
+                button.handle_event(event)
+        
+        pygame.display.flip()    
+
+    def on_back(self):
+        self.state = GameState.MENU
+        self.cardDrop.play()
+
+    def toggle_sound(self, state):
+        print("Sound On" if state else "Sound Off")
+        self.muted = not self.muted
+        if self.muted:
+            self.volume = 0
+        else:
+            self.volume = 50/100
+            self.cardDrop.play()
+
+    def set_volume(self, value):
+        print(f"Volume set to: {value}")
+        self.volume = value / 100
+        self.cardDrop.set_volume(self.volume)
+        self.cardshuffle.set_volume(self.volume)
+
     def getPlayerName(self):
 
         input_active = True
@@ -313,7 +428,6 @@ class Display:
                         name += event.unicode  # Add character
 
         return name
-
     ########################################
     # Menu Screen Section 
     ########################################
@@ -333,12 +447,16 @@ class Display:
 
     def on_multiplayer(self):
         self.state = GameState.CONNECTING
+        self.cardDrop.play()
         print("Multiplayer clicked!")
 
     def on_singleplayer(self):
+        self.cardDrop.play()
         print("Single Player clicked!")
 
     def on_options(self):
+        self.cardDrop.play()
+        self.state = GameState.OPTIONS
         print("Options clicked!")
 
     def handle_menu(self):
@@ -376,6 +494,7 @@ class Display:
                 self.drawNoficationBox("Waiting for a\nPlayer to Join")                
             else:
                 print("Game is ready")
+                self.cardshuffle.play()
                 self.state = GameState.PLAYING
 
             # Update the window
