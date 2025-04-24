@@ -529,9 +529,6 @@ class Display:
                 for button in self.playingButtons:
                     button.handle_event(event)
 
-                #if there is a winner no need to check for card movement
-                if self.game.winner != None:
-                    break
 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.handle_mouse_down(event.pos)
