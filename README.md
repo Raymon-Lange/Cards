@@ -23,52 +23,52 @@ To get started with this codebase, follow these steps:
 ## Rules and Instructions
 
 ## Objective
-Be the first to get rid of all the cards in your **pay-off pile** by playing them to the **centre stacks**.
+Be the first to get rid of all the cards in your **goal pile** by playing them to the **Field **.
 
 ## Setup
 Each player has:
-- A **pay-off pile** (cards face-down; only the top card is playable).
+- A **Goal pile** (cards face-down; only the top card is playable).
 - A **hand** of up to 5 cards.
-- Up to **4 side stacks** for temporary card storage.
+- Up to **4 discard stacks** for temporary card storage.
 
-The **centre area** can have up to **3 center stacks** at a time.
+The **field area** can have up to **4 center stacks** at a time.
 
 ## How to Play
-- Only the **top card** of your pay-off pile can be played at any time.
+- Only the **top card** of your goal pile can be played at any time.
 - To start a center stack, you must play an **Ace** (or a **King used as Ace**).
-- Center stacks build **upward in order**: Ace ➔ 2 ➔ 3 ➔ … ➔ Queen.
+- Field stacks build **upward in order**: Ace ➔ 2 ➔ 3 ➔ … ➔ Queen.
 - Suits **do not** matter.
 
 You can:
-- Play cards from your **hand**, **top of pay-off pile**, or **top of side stacks** to center stacks.
-- **Discard** cards from your hand to side stacks (maximum of 4 side stacks).
+- Play cards from your **hand**, **top of goal pile**, or **top of discard stacks** to field stacks.
+- **Discard** cards from your hand to discard stacks (maximum of 4 discard stacks).
 
 You **cannot**:
-- Move cards between side stacks.
-- Move cards from a center stack elsewhere.
-- Play pay-off cards to side stacks.
+- Move cards between discard stacks.
+- Move cards from a field stack elsewhere.
+- Play goal cards to discard stacks.
 
 ## Special Rules
 - **Kings are wild**:
-  - They can act as the next needed card on a center stack.
-  - You can discard them to a side stack without committing their value.
+  - They can act as the next needed card on a field stack.
+  - You can discard them into a discard stack without committing their value.
 
-- If you **finish all five cards in your hand** without discarding to a side stack:
+- If you **finish all five cards in your hand** without discarding to a discard stack:
   - Immediately **draw 5 more cards** and continue your turn.
 
 - If you **complete** a center stack by playing a **Queen** (or a King acting as Queen):
-  - Your opponent shuffles that completed stack into the stock.
+- The field stack will reset to zero, and cards will be shuffled into the deck
 
 ## Turn Flow
 1. If you have **fewer than 5 cards** in your hand, **draw cards** to bring your hand up to 5.
-2. **Make as many plays as you can** to center stacks.
-3. Once you **discard** to a side stack, **your turn ends**.
+2. **Make as many plays as you can** to field stacks.
+3. Once you **discard** to a discard stack, **your turn ends**.
 4. Players **alternate turns**.
 
 ## Winning
-The first player to **empty their pay-off pile** wins!
+The first player to **empty their goal pile** wins!
 
 ## Starting Player
-The player whose **pay-off pile top card is higher** goes first.
+The player whose **goal pile top card is higher** goes first.
 
 Have fun playing Spite and Malice, and happy coding!
