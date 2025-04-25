@@ -21,25 +21,55 @@ To get started with this codebase, follow these steps:
 
 ## Gameplay
 
-### Objective
-Be the first player to move all your cards from your play stack to the center stacks.
+# Card Game - Rules and Instructions
 
-### Rules
-- The game is played with two players, each with a 20-card stockpile.
-- Cards are played from the stockpile to the center building piles, starting with an Ace and going up to a Queen.
-- Kings are wild and can be used to substitute any card.
-- The player with the highest-ranking face-up card in their stockpile plays first.
-- Players draw cards to make a five-card hand and continue playing until their stockpile is empty.
+## Objective
+Be the first to get rid of all the cards in your **pay-off pile** by playing them to the **centre stacks**.
 
-### Building Foundations
-- The first card on a center stack must be an Ace, followed by cards in ascending order.
-- Cards can be played from the hand, discard piles, or play stack.
+## Setup
+Each player has:
+- A **pay-off pile** (cards face-down; only the top card is playable).
+- A **hand** of up to 5 cards.
+- Up to **4 side stacks** for temporary card storage.
 
-### Holding Stacks
-- It's strategic to place multiple cards of the same numerical value on a holding stack pile.
-- Cards in the holding stack can be in descending order.
+The **centre area** can have up to **3 center stacks** at a time.
 
-### Game Ending
-- The game ends when a player plays the last card of their pay-off pile to the center or when the stock runs out of cards.
+## How to Play
+- Only the **top card** of your pay-off pile can be played at any time.
+- To start a center stack, you must play an **Ace** (or a **King used as Ace**).
+- Center stacks build **upward in order**: Ace ➔ 2 ➔ 3 ➔ … ➔ Queen.
+- Suits **do not** matter.
+
+You can:
+- Play cards from your **hand**, **top of pay-off pile**, or **top of side stacks** to center stacks.
+- **Discard** cards from your hand to side stacks (maximum of 4 side stacks).
+
+You **cannot**:
+- Move cards between side stacks.
+- Move cards from a center stack elsewhere.
+- Play pay-off cards to side stacks.
+
+## Special Rules
+- **Kings are wild**:
+  - They can act as the next needed card on a center stack.
+  - You can discard them to a side stack without committing their value.
+
+- If you **finish all five cards in your hand** without discarding to a side stack:
+  - Immediately **draw 5 more cards** and continue your turn.
+
+- If you **complete** a center stack by playing a **Queen** (or a King acting as Queen):
+  - Your opponent shuffles that completed stack into the stock.
+
+## Turn Flow
+1. If you have **fewer than 5 cards** in your hand, **draw cards** to bring your hand up to 5.
+2. **Make as many plays as you can** to center stacks.
+3. Once you **discard** to a side stack, **your turn ends**.
+4. Players **alternate turns**.
+
+## Winning
+The first player to **empty their pay-off pile** wins!
+
+## Starting Player
+The player whose **pay-off pile top card is higher** goes first.
 
 Have fun playing Spite and Malice, and happy coding!
