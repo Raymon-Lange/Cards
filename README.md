@@ -19,9 +19,8 @@ To get started with this codebase, follow these steps:
   ```
 3. **Run the Game:**
 
-## Gameplay
 
-# Card Game - Rules and Instructions
+## Rules and Instructions
 
 ## Objective
 Be the first to get rid of all the cards in your **pay-off pile** by playing them to the **centre stacks**.
