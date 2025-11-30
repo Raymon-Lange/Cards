@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cards-server
+    ports:
+      - "5550:5550"
+    environment:
+      - SDL_VIDEODRIVER=dummy
+      - PYGAME_HIDE_SUPPORT_PROMPT=1
+      - LOG_PATH=/app/server.log
+    restart: unless-stopped

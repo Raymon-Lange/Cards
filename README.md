@@ -18,6 +18,101 @@ To get started with this codebase, follow these steps:
 
   ```
 3. **Run the Game:**
+## Server
+
+This project includes a TCP-based server implementation in `Server.py` which manages game sessions. Below are ways to run the server: locally for development, or inside Docker for a headless, reproducible deployment.
+
+### Run the server locally (development)
+
+1. Create and activate a virtual environment (optional but recommended):
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+2. Install the project dependencies:
+```bash
+pip install -r requirements.txt
+```
+3. For headless execution (no display), set the SDL video driver to dummy and start the server:
+```bash
+export SDL_VIDEODRIVER=dummy
+python3 Server.py
+```
+
+This will start the server and bind to 0.0.0.0:5550 by default.
+
+### Run the server in Docker (headless)
+
+You can run `Server.py` inside a Docker container without a graphical display (the server doesn't need any UI). The repository includes a Dockerfile and Docker Compose configuration that will install dependencies and run the server.
+
+Build the image:
+```bash
+docker build -t cards-server -f Dockerfile .
+```
+
+Run the container directly:
+```bash
+docker run -p 5550:5550 --name cards-server cards-server
+```
+
+Or use docker-compose:
+```bash
+docker compose up --build
+```
+
+The server listens on port `5550` by default; you can connect a client to <host-ip>:5550. If needed, you can remap the host port when running:
+```bash
+docker run -d -p 5551:5550 --name cards-server cards-server  # expose container port 5550 on host 5551
+```
+
+Notes:
+- The image installs `pygame` as a dependency for the game logic. To keep the container headless we set `SDL_VIDEODRIVER=dummy` so pygame doesn't require a display.
+- The server logs to `server.log` inside the container. Use `docker logs cards-server` to view console output (or `docker cp` to retrieve the file).
+  - If you run the container with a non-root runtime user, the `Dockerfile` ensures the `/app` directory and `server.log` are owned by that runtime user so the server can write logs. If you still see permission errors when running the container, ensure any host volumes mounted into `/app` are writable by the container user or run the container as a user with proper access.
+  - You can customize the logging path using the `LOG_PATH` environment variable. In Dockerfile and docker-compose the default is `/app/server.log`. To override, pass LOG_PATH on the `docker run` command or set it in `docker-compose.yml`.
+
+    Example:
+    ```bash
+    docker run -e LOG_PATH=/tmp/cards-server.log -p 5550:5550 --name cards-server cards-server
+    ```
+
+  Logging behavior
+  ----------------
+  - The server will try to create and write to `LOG_PATH` on startup; if it cannot, it will diagnose the issue and **fallback to `/tmp/server.log`**. The server emits a warning message (printed to stdout and `docker logs`) when this occurs and logs the effective path. This helps debugging bind/permission issues when using host-mounted volumes or custom `LOG_PATH` values.
+
+CLI helper script
+-----------------
+There's a helper script in `scripts/manage_server.sh` which provides a small CLI to build, start, stop, and view logs for the server container. It prints green on success and red on failure to help you quickly see status.
+
+Examples:
+```bash
+# Build the image
+Cards/scripts/manage_server.sh build
+
+# Start the server (will build the image if missing)
+Cards/scripts/manage_server.sh start
+
+# Stop and remove the server container
+Cards/scripts/manage_server.sh stop
+
+# Check status
+Cards/scripts/manage_server.sh status
+
+# Follow logs
+Cards/scripts/manage_server.sh logs
+```
+
+You can override default settings with flags:
+- --name NAME for container name
+- --image IMAGE for image name
+- --port PORT for port mapping
+- --dockerfile DOCKERFILE to supply a Dockerfile path
+
+Security/notes:
+- If you want to change the server listen port, edit `Server.py` and update the `port` value. Alternatively, you can map the internal port to a different host port using Docker run or docker compose port remapping.
+- When running on production hosts, ensure the Docker daemon is managed and firewalls allow the chosen port.
+
+
 
 
 ## Rules and Instructions
