@@ -112,6 +112,39 @@ Security/notes:
 - If you want to change the server listen port, edit `Server.py` and update the `port` value. Alternatively, you can map the internal port to a different host port using Docker run or docker compose port remapping.
 - When running on production hosts, ensure the Docker daemon is managed and firewalls allow the chosen port.
 
+## Running tests
+
+This project uses `pytest` for integration tests. A new integration test has been added at `tests/test_server_integration.py` that starts the server as a subprocess and connects two clients to validate the socket protocol and game startup behavior.
+
+To run the tests locally:
+
+1. Create and activate a virtual environment (recommended):
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+2. Install dependencies (including pytest):
+```bash
+pip install -r requirements.txt
+```
+3. Run the test:
+```bash
+export SDL_VIDEODRIVER=dummy
+python -m pytest -q tests/test_server_integration.py
+```
+
+Alternatively you can use the provided helper script to create a virtual environment and run the server integration tests:
+
+```bash
+scripts/run_server_tests.sh
+```
+
+Options:
+- `--reuse-venv` - reuse `./venv` instead of recreating it
+- `--no-install` - skip installing requirements
+
+The test will start a temporary server instance and connect two `Network` clients to ensure player IDs are assigned and that the game starts correctly. Ensure port `5550` is free before running the integration test.
+
 
 
 
