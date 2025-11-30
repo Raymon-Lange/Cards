@@ -143,6 +143,29 @@ Options:
 - `--reuse-venv` - reuse `./venv` instead of recreating it
 - `--no-install` - skip installing requirements
 
+## Running an agent
+
+You can run a built-in simple agent that connects to the server and plays moves automatically.
+
+First, start the server locally:
+
+```bash
+export SDL_VIDEODRIVER=dummy
+python3 Server.py
+```
+
+Then run the agent from the project root (optionally specifying a policy):
+
+```bash
+./venv/bin/python3 Agent.py --policy greedy --delay 0.3
+```
+
+The agent supports two simple policies:
+- `greedy` (default): prefers moves that play to the field.
+- `random`: selects a random legal move.
+
+Tip: Start a human client (GUI) and an agent, then play against the agent.
+
 The test will start a temporary server instance and connect two `Network` clients to ensure player IDs are assigned and that the game starts correctly. Ensure port `5550` is free before running the integration test.
 
 
