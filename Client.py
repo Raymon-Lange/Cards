@@ -1,4 +1,5 @@
 import pygame
+import logging
 from Network import Network
 from Game import *
 
@@ -20,8 +21,8 @@ def main():
     run = True
     n = Network()
     playerId = n.getP()
-
-    print("You are player", playerId)
+    logger = logging.getLogger("Client")
+    logger.info("You are player %s", playerId)
 
     clock = pygame.time.Clock()
 
@@ -30,9 +31,9 @@ def main():
 
         try:
             game = n.send("get")
-        except:
+        except Exception as e:
             run = False
-            print("Couldn't get game")
+            logging.getLogger("Client").error("Couldn't get game: %s", e)
             break
        
         for event in pygame.event.get():

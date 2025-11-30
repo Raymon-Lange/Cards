@@ -67,6 +67,7 @@ class Agent:
 
         # Helper to append move
         def append_move(act, card, loc, source=None):
+            # attach source metadata (goal/hand/discard_N) so we can log and prefer it in pick_move
             moves.append((act, str(card), str(loc), source))
 
         # For each field location, check if card can be moved
@@ -115,31 +116,46 @@ class Agent:
         if not moves:
             return None
         if self.policy == 'random':
-            return random.choice(moves)
+            choice = random.choice(moves)
+            logger.debug(f"Agent selected (random) move {choice[0]}:{choice[1]}:{choice[2]} from {choice[3]}")
+            return choice
         # greedy: prefer moves of type 'move' over discard/deal
         move_candidates = [m for m in moves if m[0] == 'move']
         if move_candidates:
             # Prefer moves by origin: goal > hand > discard
             goal_moves = [m for m in move_candidates if m[3] == 'goal']
             if goal_moves:
-                return random.choice(goal_moves)[:3]
+                choice = random.choice(goal_moves)
+                logger.debug(f"Agent selected goal move {choice[0]}:{choice[1]}:{choice[2]} from {choice[3]}")
+                return choice
             hand_moves = [m for m in move_candidates if m[3] == 'hand']
             if hand_moves:
-                return random.choice(hand_moves)[:3]
+                choice = random.choice(hand_moves)
+                logger.debug(f"Agent selected hand move {choice[0]}:{choice[1]}:{choice[2]} from {choice[3]}")
+                return choice
             discard_moves = [m for m in move_candidates if m[3] and m[3].startswith('discard_')]
             if discard_moves:
-                return random.choice(discard_moves)[:3]
+                choice = random.choice(discard_moves)
+                logger.debug(f"Agent selected discard move {choice[0]}:{choice[1]}:{choice[2]} from {choice[3]}")
+                return choice
         # else discard
         discards = [m for m in moves if m[0] == 'discard']
         if discards:
-            return random.choice(discards)[:3]
+            choice = random.choice(discards)
+            logger.debug(f"Agent selected discard action {choice[0]}:{choice[1]}:{choice[2]} from {choice[3]}")
+            return choice
         # fallback: return the first move (strip source if present)
         first = moves[0]
-        return first[:3]
+        logger.debug(f"Agent selected fallback move {first[0]}:{first[1]}:{first[2]} from {first[3]}")
+        return first
 
-    def send_move(self, action, value, location):
+    def send_move(self, action, value, location, source=None):
         data = f"{action}:{value}:{location}" if value is not None else f"{action}::"
-        logger.info(f"Player {(self.player_id)} sending move: {data}")
+        # source indicates whether this card came from 'goal', 'hand', or 'discard_N'
+        origin = source or 'unknown'
+        # Describe the target (field or discard pile) in a human-friendly way
+        target_desc = f"field {location}" if action == 'move' else (f"discard {location}" if action == 'discard' else action)
+        logger.info(f"Player {self.player_id} sending move: {data} (origin={origin}, target={target_desc})")
         try:
             board = self.n.send(data)
             return board
@@ -147,7 +163,7 @@ class Agent:
             logger.error(f"Error sending move: {e}")
             return None
 
-    def play_loop(self, loop_delay=0.5):
+    def play_loop(self, loop_delay=1.0):
         try:
             while True:
                 board = self.get_board()
@@ -179,9 +195,9 @@ class Agent:
                 if choice is None:
                     time.sleep(loop_delay)
                     continue
-                action, value, location = choice
+                action, value, location, source = choice
                 # Some moves like 'deal' set value to '', and location might be 0
-                board = self.send_move(action, value, location)
+                board = self.send_move(action, value, location, source=source)
                 # Small delay to avoid flooding the server
                 time.sleep(loop_delay)
 

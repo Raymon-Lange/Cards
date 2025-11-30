@@ -1,4 +1,5 @@
 import pygame
+import logging
 from enum import Enum, auto
 from Network import Network
 from Game import *
@@ -6,6 +7,7 @@ import sys,os
 
 # Create the window
 window = pygame.display.set_mode((800, 600))
+logger = logging.getLogger("Display")
 
 # Set the background color
 window.fill((0, 100, 0))
@@ -189,7 +191,7 @@ class Display:
             elif self.state == GameState.CONNECTING:
                 self.handleConnecting()
             else:   
-                print("No State!!!")
+                logger.error("No State!!!")
                 break  
 
     ########################################
@@ -381,7 +383,7 @@ class Display:
         self.cardDrop.play()
 
     def toggle_sound(self, state):
-        print("Sound On" if state else "Sound Off")
+        logger.info("Sound On" if state else "Sound Off")
         self.muted = not self.muted
         if self.muted:
             self.volume = 0
@@ -390,7 +392,7 @@ class Display:
             self.cardDrop.play()
 
     def set_volume(self, value):
-        print(f"Volume set to: {value}")
+        logger.info(f"Volume set to: {value}")
         self.volume = value / 100
         self.cardDrop.set_volume(self.volume)
         self.cardshuffle.set_volume(self.volume)
@@ -448,16 +450,16 @@ class Display:
     def on_multiplayer(self):
         self.state = GameState.CONNECTING
         self.cardDrop.play()
-        print("Multiplayer clicked!")
+        logger.info("Multiplayer clicked!")
 
     def on_singleplayer(self):
         self.cardDrop.play()
-        print("Single Player clicked!")
+        logger.info("Single Player clicked!")
 
     def on_options(self):
         self.cardDrop.play()
         self.state = GameState.OPTIONS
-        print("Options clicked!")
+        logger.info("Options clicked!")
 
     def handle_menu(self):
         while self.state == GameState.MENU:
@@ -493,7 +495,7 @@ class Display:
             if not self.game.ready:    
                 self.drawNoficationBox("Waiting for a\nPlayer to Join")                
             else:
-                print("Game is ready")
+                logger.info("Game is ready")
                 self.cardshuffle.play()
                 self.state = GameState.PLAYING
 
@@ -564,7 +566,7 @@ class Display:
         for card in cards:
             if card.rect.collidepoint(pos):
                 self.set_active_card(card)
-                print("Clicked on", card)
+                logger.debug("Clicked on %s", card)
                 return
 
     def try_select_card_from_discard(self, discard_piles, pos):
@@ -572,13 +574,13 @@ class Display:
             if pile and pile[0].rect.collidepoint(pos):
                 card = pile[-1]
                 self.set_active_card(card)
-                print("Clicked on discard", card)
+                logger.debug("Clicked on discard %s", card)
                 return
 
     def try_select_card(self, card, pos):
         if card.rect.collidepoint(pos):
             self.set_active_card(card)
-            print("Clicked on", card)
+            logger.debug("Clicked on %s", card)
 
     def set_active_card(self, card):
         self.activeCard = card

@@ -59,7 +59,7 @@ if _can_write_to_path(logfile):
     except Exception as e:
         # Unexpected error while creating handler; fall back
         fallback_log = '/tmp/server.log'
-        print(f"Warning: cannot open {logfile} for writing ({e}); falling back to {fallback_log}")
+        logger.warning(f"Warning: cannot open {logfile} for writing ({e}); falling back to {fallback_log}")
         if _can_write_to_path(fallback_log):
             try:
                 file_handler = logging.FileHandler(fallback_log)
@@ -70,7 +70,7 @@ if _can_write_to_path(logfile):
 else:
     fallback_log = '/tmp/server.log'
     diagnosis = _diagnose_path_issue(logfile)
-    print(f"Warning: LOG_PATH '{logfile}' is not writable ({diagnosis}); falling back to {fallback_log}")
+    logger.warning(f"Warning: LOG_PATH '{logfile}' is not writable ({diagnosis}); falling back to {fallback_log}")
     if _can_write_to_path(fallback_log):
         try:
             file_handler = logging.FileHandler(fallback_log)

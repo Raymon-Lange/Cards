@@ -1,5 +1,6 @@
 import random
 import pygame
+import logging
 from os.path import isfile, join
 
 class Board:
@@ -62,7 +63,7 @@ class Board:
             random.shuffle(self.dump)
             self.deck.cards = self.deck.cards + self.dump
             self.dump.clear()
-            print("We have reshuffled")
+            logging.getLogger("Game").info("We have reshuffled")
 
         if len(self.playerOne.goal) == 0:
             self.winner = 1
