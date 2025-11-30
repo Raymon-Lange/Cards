@@ -143,6 +143,16 @@ Options:
 - `--reuse-venv` - reuse `./venv` instead of recreating it
 - `--no-install` - skip installing requirements
 
+## Building and pushing Docker images
+
+There's a helper script to build and push the Docker image for this project. It detects the next `1.X` version, builds the image, and pushes the new version tag (and optionally `latest`).
+
+```bash
+scripts/build_and_push_docker.sh --image raymonlange/cards-server --yes
+```
+
+Use `--dry-run` to preview the commands without making changes, and `--git-tag` to create a `v1.X` tag in git.
+
 ## Running an agent
 
 You can run a built-in simple agent that connects to the server and plays moves automatically.
