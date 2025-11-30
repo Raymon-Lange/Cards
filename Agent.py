@@ -66,44 +66,48 @@ class Agent:
         player = board.playerOne if my_player_id == 0 else board.playerTwo
 
         # Helper to append move
-        def append_move(act, card, loc):
-            moves.append((act, str(card), str(loc)))
+        def append_move(act, card, loc, source=None):
+            moves.append((act, str(card), str(loc), source))
 
         # For each field location, check if card can be moved
+        # Candidate order: check goal pile first, then hand, then each discard pile
         for field_idx, field_pile in enumerate(board.field):
-            for card_source, source_list in [('hand', player.hand), ('goal', player.goal)] + [(f'discard_{i}', player.discard[i]) for i in range(len(player.discard))]:
-                # If discard_{i} and empty, skip
+            sources = [('goal', player.goal), ('hand', player.hand)] + [(f'discard_{i}', player.discard[i]) for i in range(len(player.discard))]
+            for card_source, source_list in sources:
                 src_cards = source_list
-                if len(src_cards) == 0:
+                if not src_cards:
                     continue
 
-                # We only move the top-most card from discard or goal; for hand we can move any
-                candidates = [src_cards[-1]] if card_source.startswith('discard_') or card_source == 'goal' else list(src_cards)
+                # Goal and discard piles: only top-most card is playable; hand: any card
+                if card_source == 'goal' or card_source.startswith('discard_'):
+                    candidates = [src_cards[-1]]
+                else:
+                    candidates = list(src_cards)
 
                 for card in candidates:
                     if len(field_pile) == 0:
                         # Empty pile, only Ace or King can start the pile
                         if card.rank == 'Ace' or card.rank == 'King':
-                            append_move('move', card, field_idx)
+                            append_move('move', card, field_idx, source=card_source if card_source is not None else 'hand')
                     else:
                         # need to check top card value; Board.move uses deck.ranks index and counts
                         top_count = len(field_pile) - 1
                         # Board.move determines if ranks.index(card.rank) - cardCount == 1 or King
                         if card.rank == 'King' or deck.ranks.index(card.rank) - top_count == 1:
-                            append_move('move', card, field_idx)
+                            append_move('move', card, field_idx, source=card_source if card_source is not None else 'hand')
 
         # If no moves, consider discarding a hand card to any discard pile (0..3)
         if len(player.hand) > 0:
             for card in player.hand:
                 for d in range(4):
-                    append_move('discard', card, d)
+                    append_move('discard', card, d, source='hand')
                     # Prefer lower-numbered discard pile; break to avoid flooding
                     break
                 break
 
         # If no moves at all, consider 'deal' to draw cards if allowed
         if len(moves) == 0:
-            append_move('deal', '', 0)
+            append_move('deal', '', 0, source=None)
 
         return moves
 
@@ -115,13 +119,23 @@ class Agent:
         # greedy: prefer moves of type 'move' over discard/deal
         move_candidates = [m for m in moves if m[0] == 'move']
         if move_candidates:
-            return random.choice(move_candidates)
+            # Prefer moves by origin: goal > hand > discard
+            goal_moves = [m for m in move_candidates if m[3] == 'goal']
+            if goal_moves:
+                return random.choice(goal_moves)[:3]
+            hand_moves = [m for m in move_candidates if m[3] == 'hand']
+            if hand_moves:
+                return random.choice(hand_moves)[:3]
+            discard_moves = [m for m in move_candidates if m[3] and m[3].startswith('discard_')]
+            if discard_moves:
+                return random.choice(discard_moves)[:3]
         # else discard
         discards = [m for m in moves if m[0] == 'discard']
         if discards:
-            return random.choice(discards)
-        # fallback
-        return moves[0]
+            return random.choice(discards)[:3]
+        # fallback: return the first move (strip source if present)
+        first = moves[0]
+        return first[:3]
 
     def send_move(self, action, value, location):
         data = f"{action}:{value}:{location}" if value is not None else f"{action}::"
