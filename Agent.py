@@ -30,7 +30,13 @@ from Network import Network
 from Game import Card
 
 logger = logging.getLogger("Agent")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# Allow DEBUG/INFO/WARNING via environment variable LOGLEVEL; default INFO
+loglevel = os.getenv('LOGLEVEL', 'INFO').upper()
+try:
+    level = getattr(logging, loglevel)
+except Exception:
+    level = logging.INFO
+logging.basicConfig(level=level, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class Agent:
@@ -214,7 +220,13 @@ def main():
     parser = argparse.ArgumentParser(description='Agent that connects to Cards server and plays')
     parser.add_argument('--policy', default='greedy', choices=['greedy', 'random'], help='Policy for making moves')
     parser.add_argument('--delay', default=0.3, type=float, help='Loop delay (seconds) between board polls')
+    parser.add_argument('--loglevel', default=None, help='Set log level (DEBUG, INFO, WARNING, ERROR)')
     args = parser.parse_args()
+
+    # Allow setting logging level via CLI argument (overrides LOGLEVEL env var)
+    if args.loglevel:
+        level = getattr(logging, args.loglevel.upper(), logging.INFO)
+        logging.getLogger().setLevel(level)
 
     agent = Agent(policy=args.policy)
     agent.play_loop(loop_delay=args.delay)
