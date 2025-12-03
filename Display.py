@@ -560,7 +560,9 @@ class Display:
 
         self.try_select_card_from_list(player.hand, pos)
         self.try_select_card_from_discard(player.discard, pos)
-        self.try_select_card(player.goal[0], pos)
+        # Only attempt to check the goal card if the goal pile is not empty
+        if getattr(player, 'goal', None) and len(player.goal) > 0:
+            self.try_select_card(player.goal[0], pos)
 
     def try_select_card_from_list(self, cards, pos):
         for card in cards:
