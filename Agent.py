@@ -80,7 +80,12 @@ class Agent:
                     continue
 
                 # Goal and discard piles: only top-most card is playable; hand: any card
-                if card_source == 'goal' or card_source.startswith('discard_'):
+                # Note: Game stores the top-of-goal as index 0; discard piles use the last element as top
+                if card_source == 'goal':
+                    # Goal top card is the first item in the list
+                    candidates = [src_cards[0]]
+                elif card_source.startswith('discard_'):
+                    # Discard top card is the last item in the list
                     candidates = [src_cards[-1]]
                 else:
                     candidates = list(src_cards)
